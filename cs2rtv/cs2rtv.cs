@@ -170,14 +170,14 @@ public class Cs2rtv : BasePlugin
                     nextmap = winner.ElementAt(0).Key;
                     Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
                     rtvwin = true;
-                }else if(votes.Select(x=>x.Value).Max()<=totalvotes*0.5f && votestep < 2){
+                }else if(votes.Select(x=>x.Value).Max()<=totalvotes*0.5f && votestep < 1){
                     Server.PrintToChatAll("本轮投票未有地图投票比例超过50%，将进行下一轮投票");
                     votestep++;
                     votemaplist.Clear();
                     votes = votes.OrderByDescending(x => x.Value).ToDictionary(x=>x.Key,y=>y.Value);
                     votemaplist.Add(votes.ElementAt(0).Key);
                     votemaplist.Add(votes.ElementAt(1).Key);
-                }else if(votes.Select(x=>x.Value).Max()<=totalvotes*0.5f && votestep >= 2){
+                }else if(votes.Select(x=>x.Value).Max()<=totalvotes*0.5f && votestep >= 1){
                     nextmap = votemaplist[random.Next(0,votemaplist.Count-1)];
                     Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
                     rtvwin = true;
