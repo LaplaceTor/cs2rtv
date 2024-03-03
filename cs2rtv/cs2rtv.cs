@@ -22,7 +22,7 @@ public class Cs2rtv : BasePlugin
     private bool rtvwin = false;
     private int GetPlayersCount()
     {
-        var count = Utilities.GetPlayers().Where((x) =>
+        int count = Utilities.GetPlayers().Where((x) =>
             x.IsValid &&
             x.Connected == PlayerConnectedState.PlayerConnected &&
             x.TeamNum > 1
@@ -44,7 +44,7 @@ public class Cs2rtv : BasePlugin
             command.ReplyToCommand("投票已在进行中");
             return;
         }
-        var rtvrequired = (int)Math.Floor(GetPlayersCount() * 0.6f);
+        int rtvrequired = (int)Math.Floor(GetPlayersCount() * 0.6f);
         if (rtvcount.Contains(cCSPlayer!.SteamID))
         {
             command.ReplyToCommand($"你已投票，当前 {rtvcount.Count}/{rtvrequired}");
@@ -74,9 +74,9 @@ public class Cs2rtv : BasePlugin
             command.ReplyToCommand("投票已在进行中");
             return;
         }
-            isrtv = true;
-            Server.PrintToChatAll($"管理员已强制开始地图投票");
-            StartRtv();
+        isrtv = true;
+        Server.PrintToChatAll($"管理员已强制开始地图投票");
+        StartRtv();
     }
 
     [ConsoleCommand("css_nominate")]
@@ -93,7 +93,7 @@ public class Cs2rtv : BasePlugin
             command.ReplyToCommand("当前预定地图已满");
             return;
         }
-        var mapname = command.GetArg(1);
+        string? mapname = command.GetArg(1);
         if (maplist.Contains(mapname) && (!Regex.IsMatch(mapname, @"\bsurf_\b") || !Regex.IsMatch(mapname, @"\bbhop_\b") || !Regex.IsMatch(mapname, @"\bkz_\b")))
         {
             if (mapname.Contains("surf_") || mapname.Contains("bhop_") || mapname.Contains("kz_"))
@@ -128,80 +128,78 @@ public class Cs2rtv : BasePlugin
     public void StartRtv()
     {
         Random random = new();
-        var votemaplist = new List<string>(mapnominatelist);
+        List<string> votemaplist = new List<string>();
+        votemaplist = mapnominatelist;
         while (votemaplist.Count < 5)
         {
-            var index = random.Next(0, maplist.Count - 1);
+            int index = random.Next(0, maplist.Count - 1);
             if (Server.MapName.Contains(maplist[index]) || mapnominatelist.Contains(maplist[index])) continue;
             votemaplist.Add(maplist[index]);
         }
-
-        var votemenu = new ChatMenu("请从以下地图中选择一张");
-        var nextmap = "";
-        var totalvotes = 0;
+        ChatMenu votemenu = new ChatMenu("请从以下地图中选择一张");
+        string nextmap = "";
+        int totalvotes = 0;
         Dictionary<string, int> votes = new();
 
-        while (!rtvwin)
+        votes.Clear();
+        totalvotes = 0;
+        foreach (string mapname in votemaplist)
         {
-            votes.Clear();
-            totalvotes = 0;
-            foreach (var mapname in votemaplist)
+            votemenu.AddMenuOption(mapname, (player, options) =>
             {
-                votemenu.AddMenuOption(mapname, (player, options) =>
+                Server.PrintToConsole("创建投票列表中");
+                votes[mapname] += 1;
+                totalvotes += 1;
+                player.PrintToChat($"你已投票给地图 {mapname}");
+                if (votes[mapname] >= (int)Math.Floor(GetPlayersCount() * 0.5f))
                 {
-                    votes[mapname] += 1;
-                    totalvotes += 1;
-                    player.PrintToChat($"你已投票给地图 {mapname}");
-                    if (votes[mapname] > (GetPlayersCount() * 0.5f))
-                    {
-                        nextmap = mapname;
-                        Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
-                        VoteEndMapChange(nextmap);
-                    }
-                });
-            }
-
-            foreach (var player in Utilities.GetPlayers().Where((x) =>
-                    x.IsValid &&
-                    x.Connected == PlayerConnectedState.PlayerConnected &&
-                    x.TeamNum > 1
-                    ))
-            {
-                MenuManager.OpenChatMenu(player, votemenu);
-            }
-
-            AddTimer(30f, () =>
-            {
-                if (totalvotes == 0)
-                {
-                    nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
+                    nextmap = mapname;
                     Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
-                    rtvwin = true;
+                    VoteEndMapChange(nextmap);
+                    return;
                 }
-                else if (votes.Select(x => x.Value).Max() > totalvotes * 0.5f)
-                {
-                    var winnervotes = votes.Select(x => x.Value).Max();
-                    IEnumerable<KeyValuePair<string, int>> winner = votes.Where(x => x.Value == winnervotes);
-                    nextmap = winner.ElementAt(0).Key;
-                    Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
-                    rtvwin = true;
-                }
-                else if (votes.Select(x => x.Value).Max() <= totalvotes * 0.5f && votemaplist.Count >= 4)
-                {
-                    Server.PrintToChatAll("本轮投票未有地图投票比例超过50%，将进行下一轮投票");
-                    votemaplist.Clear();
-                    votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
-                    for (int x = 0; x < votemaplist.Count / 2; x++)
-                        votemaplist.Add(votes.ElementAt(x).Key);
-                }
-                else if (votes.Select(x => x.Value).Max() <= totalvotes * 0.5f && votemaplist.Count < 4)
-                {
-                    nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
-                    Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
-                    rtvwin = true;
-                }
-            }, TimerFlags.STOP_ON_MAPCHANGE);
+            });
         }
+
+        foreach (CCSPlayerController? player in Utilities.GetPlayers().Where((x) =>
+                x.IsValid &&
+                x.Connected == PlayerConnectedState.PlayerConnected &&
+                x.TeamNum > 1
+                ))
+        {
+            MenuManager.OpenChatMenu(player, votemenu);
+        }
+        AddTimer(30f, () =>
+        {
+            if (totalvotes == 0)
+            {
+                nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
+                Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
+                rtvwin = true;
+            }
+            else if (votes.Select(x => x.Value).Max() > totalvotes * 0.5f)
+            {
+                int winnervotes = votes.Select(x => x.Value).Max();
+                IEnumerable<KeyValuePair<string, int>> winner = votes.Where(x => x.Value == winnervotes);
+                nextmap = winner.ElementAt(0).Key;
+                Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
+                rtvwin = true;
+            }
+            else if (votes.Select(x => x.Value).Max() <= totalvotes * 0.5f && votemaplist.Count >= 4)
+            {
+                Server.PrintToChatAll("本轮投票未有地图投票比例超过50%，将进行下一轮投票");
+                votemaplist.Clear();
+                votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
+                for (int x = 0; x < votemaplist.Count / 2; x++)
+                    votemaplist.Add(votes.ElementAt(x).Key);
+            }
+            else if (votes.Select(x => x.Value).Max() <= totalvotes * 0.5f && votemaplist.Count < 4)
+            {
+                nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
+                Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
+                rtvwin = true;
+            }
+        }, TimerFlags.STOP_ON_MAPCHANGE);
         VoteEndMapChange(nextmap);
     }
 
