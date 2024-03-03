@@ -1,0 +1,67 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\40542\\OneDrive\\Documents\\GitHub\\cs2rtv\\cs2rtv\\cs2rtv.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\40542\\OneDrive\\Documents\\GitHub\\cs2rtv\\cs2rtv\\cs2rtv.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\40542\\OneDrive\\Documents\\GitHub\\cs2rtv\\cs2rtv\\cs2rtv.csproj",
+        "projectName": "cs2rtv",
+        "projectPath": "C:\\Users\\40542\\OneDrive\\Documents\\GitHub\\cs2rtv\\cs2rtv\\cs2rtv.csproj",
+        "packagesPath": "C:\\Users\\40542\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\40542\\OneDrive\\Documents\\GitHub\\cs2rtv\\cs2rtv\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\40542\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net7.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net7.0": {
+            "targetAlias": "net7.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "dependencies": {
+            "CounterStrikeSharp.API": {
+              "target": "Package",
+              "version": "[1.0.179, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.406\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
