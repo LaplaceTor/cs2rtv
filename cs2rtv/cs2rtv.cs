@@ -42,30 +42,27 @@ public class Cs2rtv : BasePlugin
         if (isrtv)
         {
             command.ReplyToCommand("投票已在进行中");
+            return;
+        }
+        var rtvrequired = (int)Math.Floor(GetPlayersCount() * 0.6f);
+        if (rtvcount.Contains(cCSPlayer!.SteamID))
+        {
+            command.ReplyToCommand($"你已投票，当前 {rtvcount.Count}/{rtvrequired}");
+            return;
+        }
+        rtvcount.Add(cCSPlayer.SteamID);
+        if (rtvcount.Count < rtvrequired)
+        {
+            command.ReplyToCommand($"你已投票，当前 {rtvcount.Count}/{rtvrequired}");
         }
         else
         {
-            var rtvrequired = (int)Math.Floor(GetPlayersCount() * 0.6f);
-            if (rtvcount.Contains(cCSPlayer!.SteamID))
-            {
-                command.ReplyToCommand($"你已投票，当前 {rtvcount.Count}/{rtvrequired}");
-            }
-            else
-            {
-                rtvcount.Add(cCSPlayer.SteamID);
-                if (rtvcount.Count < rtvrequired)
-                {
-                    command.ReplyToCommand($"你已投票，当前 {rtvcount.Count}/{rtvrequired}");
-                }
-                else
-                {
-                    isrtv = true;
-                    Server.PrintToChatAll("地图投票进行中");
-                    StartRtv();
-                }
-            }
+            isrtv = true;
+            Server.PrintToChatAll("地图投票进行中");
+            StartRtv();
         }
     }
+
 
     [ConsoleCommand("css_forcertv")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
@@ -75,13 +72,11 @@ public class Cs2rtv : BasePlugin
         if (isrtv)
         {
             command.ReplyToCommand("投票已在进行中");
+            return;
         }
-        else
-        {
             isrtv = true;
             Server.PrintToChatAll($"管理员已强制开始地图投票");
             StartRtv();
-        }
     }
 
     [ConsoleCommand("css_nominate")]
@@ -91,48 +86,48 @@ public class Cs2rtv : BasePlugin
         if (isrtv)
         {
             command.ReplyToCommand("投票已在进行中");
+            return;
         }
-        else if (mapnominatelist.Count >= 5)
+        if (mapnominatelist.Count >= 5)
         {
             command.ReplyToCommand("当前预定地图已满");
+            return;
         }
-        else
+        var mapname = command.GetArg(1);
+        if (maplist.Contains(mapname) && (!Regex.IsMatch(mapname, @"\bsurf_\b") || !Regex.IsMatch(mapname, @"\bbhop_\b") || !Regex.IsMatch(mapname, @"\bkz_\b")))
         {
-            var mapname = command.GetArg(1);
-            if (maplist.Contains(mapname) && (!Regex.IsMatch(mapname, @"\bsurf_\b") || !Regex.IsMatch(mapname, @"\bbhop_\b") || !Regex.IsMatch(mapname, @"\bkz_\b")))
+            if (mapname.Contains("surf_") || mapname.Contains("bhop_") || mapname.Contains("kz_"))
             {
-                if (mapname.Contains("surf_") || mapname.Contains("bhop_") || mapname.Contains("kz_"))
+                mapname = maplist.Find(x => x.Contains(mapname));
+                if (mapnominatelist.Contains(mapname!))
                 {
-                    mapname = maplist.Find(x => x.Contains(mapname));
-                    if (mapnominatelist.Contains(mapname!))
-                    {
-                        command.ReplyToCommand($"地图 {mapname} 已被他人预定");
-                        return;
-                    }
-                    else if (mapname == Server.MapName)
-                    {
-                        command.ReplyToCommand($"地图 {mapname} 为当前地图");
-                        return;
-                    }
-                }
-                else
-                {
-                    command.ReplyToCommand("请输入完整的地图名称如 surf_ace bhop_leaf kz_aaaa");
+                    command.ReplyToCommand($"地图 {mapname} 已被他人预定");
                     return;
                 }
-                mapnominatelist.Add(mapname!);
-                Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {mapname}");
+                else if (mapname == Server.MapName)
+                {
+                    command.ReplyToCommand($"地图 {mapname} 为当前地图");
+                    return;
+                }
             }
             else
             {
-                command.ReplyToCommand($"地图 {mapname} 不存在");
+                command.ReplyToCommand("请输入完整的地图名称如 surf_ace bhop_leaf kz_aaaa");
+                return;
             }
+            mapnominatelist.Add(mapname!);
+            Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {mapname}");
+        }
+        else
+        {
+            command.ReplyToCommand($"地图 {mapname} 不存在");
         }
     }
 
+
     public void StartRtv()
     {
-        var random = new Random();
+        Random random = new();
         var votemaplist = new List<string>(mapnominatelist);
         while (votemaplist.Count < 5)
         {
