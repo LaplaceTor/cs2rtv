@@ -16,7 +16,7 @@ on:
 
 env:
   BUILD_NUMBER: ${{ github.run_number }}
-  PROJECT_PATH: "cs2rtv.csproj"
+  PROJECT_PATH: "cs2rtv/cs2rtv.csproj"
   PROJECT_NAME: "cs2rtv"
   OUTPUT_PATH: "./cs2rtv"
 
