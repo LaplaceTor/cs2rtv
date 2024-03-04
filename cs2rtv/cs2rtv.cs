@@ -147,10 +147,6 @@ public class Cs2rtv : BasePlugin
                 totalvotes += 1;
                 player.PrintToChat($"你已投票给地图 {mapname}");
                 GetPlayersCount();
-                if(totalvotes == playercount)
-                {
-                    _votetimer!.Kill();
-                }
                 if (votes[mapname] > playercount * 0.5f)
                 {
                     nextmap = mapname;
