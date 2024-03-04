@@ -42,13 +42,13 @@ public class Cs2rtv : BasePlugin
         int rtvrequired = (int)Math.Ceiling(playercount * 0.6f);
         if (rtvcount.Contains(cCSPlayer!.SteamID))
         {
-            command.ReplyToCommand($"你已投票，当前 {rtvcount.Count}/{rtvrequired}");
+            command.ReplyToCommand($"你已投票更换地图，当前 {rtvcount.Count}/{rtvrequired}");
             return;
         }
         rtvcount.Add(cCSPlayer.SteamID);
         if (rtvcount.Count < rtvrequired)
         {
-            command.ReplyToCommand($"你已投票，当前 {rtvcount.Count}/{rtvrequired}");
+            command.ReplyToCommand($"你已投票更换地图，当前 {rtvcount.Count}/{rtvrequired}");
         }
         else
         {
