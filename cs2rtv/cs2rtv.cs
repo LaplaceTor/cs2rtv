@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2rtv;
 
@@ -20,6 +21,7 @@ public class Cs2rtv : BasePlugin
     private List<ulong> rtvcount = new();
     private bool isrtv = false;
     private bool rtvwin = false;
+    private Timer? _votetimer;
     private int playercount = 0;
     public override void Load(bool hotReload)
     {
@@ -145,6 +147,10 @@ public class Cs2rtv : BasePlugin
                 totalvotes += 1;
                 player.PrintToChat($"你已投票给地图 {mapname}");
                 GetPlayersCount();
+                if(totalvotes == playercount)
+                {
+                    _votetimer!.Kill();
+                }
                 if (votes[mapname] > playercount * 0.5f)
                 {
                     nextmap = mapname;
@@ -163,7 +169,7 @@ public class Cs2rtv : BasePlugin
         {
             MenuManager.OpenChatMenu(player, votemenu);
         }
-        CounterStrikeSharp.API.Modules.Timers.Timer _votetimer = AddTimer(30f, () =>
+        _votetimer = AddTimer(30f, () =>
         {
             if (totalvotes == 0)
             {
