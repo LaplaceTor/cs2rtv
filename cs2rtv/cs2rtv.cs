@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
@@ -121,7 +122,9 @@ public class Cs2rtv : BasePlugin
         }
         else
         {
-            command.ReplyToCommand($"地图 {mapname} 不存在");
+            command.ReplyToCommand($"地图 {mapname} 不存在,地图列表已输出到控制台");
+            foreach(string map in maplist)
+                cCSPlayer!.PrintToConsole($"map");
         }
     }
 
