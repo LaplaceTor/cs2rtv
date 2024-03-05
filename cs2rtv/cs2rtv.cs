@@ -27,6 +27,12 @@ public class Cs2rtv : BasePlugin
     {
         Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
         maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
+        RegisterEventHandler<EventPlayerDisconnect> ((@event,info) =>
+        {
+            if(rtvcount.Contains(@event.Userid.SteamID))
+                rtvcount.Remove(@event.Userid.SteamID);
+            return HookResult.Continue;
+        });
     }
 
     [ConsoleCommand("css_rtv")]
@@ -224,5 +230,4 @@ public class Cs2rtv : BasePlugin
         x.Connected == PlayerConnectedState.PlayerConnected
         ).Count();
     }
-
 }
