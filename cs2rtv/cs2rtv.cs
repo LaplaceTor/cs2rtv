@@ -18,11 +18,12 @@ public class Cs2rtv : BasePlugin
     public override string ModuleName => "CS2 RTV LITE";
     public override string ModuleVersion => "0.1.0";
     private List<string> maplist = new();
-    private List<string> _mapnominatelist = new();
+    private List<string> mapnominatelist = new();
     private List<ulong> rtvcount = new();
+    private List<string> votemaplist = new();
     private bool isrtv = false;
     private bool rtvwin = false;
-    private Timer? _votetimer;
+    private bool isrtvagain = false;
     private int playercount = 0;
     public override void Load(bool hotReload)
     {
@@ -90,18 +91,30 @@ public class Cs2rtv : BasePlugin
             command.ReplyToCommand("投票已在进行中");
             return;
         }
-        if (_mapnominatelist.Count >= 5)
+        if (mapnominatelist.Count >= 5)
         {
             command.ReplyToCommand("当前预定地图已满");
             return;
         }
         string? mapname = command.GetArg(1);
-        if (maplist.Contains(mapname) && (!Regex.IsMatch(mapname, @"\bsurf_\b") || !Regex.IsMatch(mapname, @"\bbhop_\b") || !Regex.IsMatch(mapname, @"\bkz_\b")))
+
+        List<string> blocklist = new List<string>
         {
-            if (mapname.Contains("surf_") || mapname.Contains("bhop_") || mapname.Contains("kz_"))
+            "surf","surf_","bhop","bhop_","kz","kz_"
+        };
+        foreach(string bug in blocklist)
+        {
+            if(Regex.IsMatch(mapname,@$"\b{bug}\b"))
             {
+                command.ReplyToCommand($"你输入的字段太少，无法查到符合条件的地图");
+                return;
+            }
+        }
+
+        if (maplist.Contains(mapname) && mapname.Length >2)
+        {
                 mapname = maplist.Find(x => x.Contains(mapname));
-                if (_mapnominatelist.Contains(mapname!))
+                if (mapnominatelist.Contains(mapname!))
                 {
                     command.ReplyToCommand($"地图 {mapname} 已被他人预定");
                     return;
@@ -111,14 +124,10 @@ public class Cs2rtv : BasePlugin
                     command.ReplyToCommand($"地图 {mapname} 为当前地图");
                     return;
                 }
-            }
-            else
-            {
-                command.ReplyToCommand("请输入完整的地图名称如 surf_ace bhop_leaf kz_aaaa");
-                return;
-            }
-            _mapnominatelist.Add(mapname!);
+            mapnominatelist.Add(mapname!);
             Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {mapname}");
+        }else if(mapname.Length <= 2){
+            command.ReplyToCommand($"你输入的字段太少，无法查到符合条件的地图");
         }
         else
         {
@@ -132,14 +141,14 @@ public class Cs2rtv : BasePlugin
     public void StartRtv()
     {
         Random random = new();
-        List<string> votemaplist = new List<string>();
-        votemaplist = _mapnominatelist;
+        if(!isrtvagain)
+        {votemaplist = mapnominatelist;
         while (votemaplist.Count < 5)
         {
             int index = random.Next(0, maplist.Count - 1);
-            if (Server.MapName.Contains(maplist[index]) || _mapnominatelist.Contains(maplist[index])) continue;
+            if (Server.MapName.Contains(maplist[index]) || mapnominatelist.Contains(maplist[index])) continue;
             votemaplist.Add(maplist[index]);
-        }
+        }}
         ChatMenu votemenu = new ChatMenu("请从以下地图中选择一张");
         string nextmap = "";
         int totalvotes = 0;
@@ -174,7 +183,7 @@ public class Cs2rtv : BasePlugin
         {
             MenuManager.OpenChatMenu(player, votemenu);
         }
-        _votetimer = AddTimer(30f, () =>
+        Timer votetimer = AddTimer(30f, () =>
         {
             if (totalvotes == 0)
             {
@@ -190,15 +199,15 @@ public class Cs2rtv : BasePlugin
                 Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
                 rtvwin = true;
             }
-            else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && votemaplist.Count >= 4)
+            else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && votemaplist.Count >= 4 && totalvotes > 2)
             {
                 Server.PrintToChatAll("本轮投票未有地图投票比例超过50%，将进行下一轮投票");
                 votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
-                _mapnominatelist.Clear();
-                for (int x = 0; x < votes.Count / 2; x++)
-                    _mapnominatelist!.Add(votes.ElementAt(x).Key);
+                votemaplist.Clear();
+                for (int x = 0; x < (votes.Count / 2); x++)
+                    votemaplist!.Add(votes.ElementAt(x).Key);
             }
-            else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && votemaplist.Count < 4)
+            else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && (votemaplist.Count < 4 || totalvotes <= 2))
             {
                 nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
                 Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
@@ -215,12 +224,15 @@ public class Cs2rtv : BasePlugin
         {
             rtvwin = false;
             rtvcount.Clear();
-            _mapnominatelist.Clear();
+            mapnominatelist.Clear();
+            votemaplist.Clear();
             isrtv = false;
+            isrtvagain = false;
             Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
         }
         else
         {
+            isrtvagain = true;
             StartRtv();
         }
     }
