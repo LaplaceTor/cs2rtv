@@ -29,9 +29,9 @@ public class Cs2rtv : BasePlugin
     {
         Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
         maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
-        RegisterEventHandler<EventPlayerDisconnect> ((@event,info) =>
+        RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
         {
-            if(rtvcount.Contains(@event.Userid.SteamID))
+            if (rtvcount.Contains(@event.Userid.SteamID))
                 rtvcount.Remove(@event.Userid.SteamID);
             return HookResult.Continue;
         });
@@ -102,37 +102,39 @@ public class Cs2rtv : BasePlugin
         {
             "surf","surf_","bhop","bhop_","kz","kz_"
         };
-        foreach(string bug in blocklist)
+        foreach (string bug in blocklist)
         {
-            if(Regex.IsMatch(mapname,@$"\b{bug}\b"))
+            if (Regex.IsMatch(mapname, @$"\b{bug}\b"))
             {
                 command.ReplyToCommand($"你输入的字段太少，无法查到符合条件的地图");
                 return;
             }
         }
 
-        if (maplist.Contains(mapname) && mapname.Length >2)
+        if (maplist.Contains(mapname) && mapname.Length > 2)
         {
-                mapname = maplist.Find(x => x.Contains(mapname));
-                if (mapnominatelist.Contains(mapname!))
-                {
-                    command.ReplyToCommand($"地图 {mapname} 已被他人预定");
-                    return;
-                }
-                else if (mapname == Server.MapName)
-                {
-                    command.ReplyToCommand($"地图 {mapname} 为当前地图");
-                    return;
-                }
+            mapname = maplist.Find(x => x.Contains(mapname));
+            if (mapnominatelist.Contains(mapname!))
+            {
+                command.ReplyToCommand($"地图 {mapname} 已被他人预定");
+                return;
+            }
+            else if (mapname == Server.MapName)
+            {
+                command.ReplyToCommand($"地图 {mapname} 为当前地图");
+                return;
+            }
             mapnominatelist.Add(mapname!);
             Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {mapname}");
-        }else if(mapname.Length <= 2){
+        }
+        else if (mapname.Length <= 2)
+        {
             command.ReplyToCommand($"你输入的字段太少，无法查到符合条件的地图");
         }
         else
         {
             command.ReplyToCommand($"地图 {mapname} 不存在,地图列表已输出到控制台");
-            foreach(string map in maplist)
+            foreach (string map in maplist)
                 cCSPlayer!.PrintToConsole($"{map}");
         }
     }
@@ -141,14 +143,16 @@ public class Cs2rtv : BasePlugin
     public void StartRtv()
     {
         Random random = new();
-        if(!isrtvagain)
-        {votemaplist = mapnominatelist;
-        while (votemaplist.Count < 5)
+        if (!isrtvagain)
         {
-            int index = random.Next(0, maplist.Count - 1);
-            if (Server.MapName.Contains(maplist[index]) || mapnominatelist.Contains(maplist[index])) continue;
-            votemaplist.Add(maplist[index]);
-        }}
+            votemaplist = mapnominatelist;
+            while (votemaplist.Count < 5)
+            {
+                int index = random.Next(0, maplist.Count - 1);
+                if (Server.MapName.Contains(maplist[index]) || mapnominatelist.Contains(maplist[index])) continue;
+                votemaplist.Add(maplist[index]);
+            }
+        }
         ChatMenu votemenu = new ChatMenu("请从以下地图中选择一张");
         string nextmap = "";
         int totalvotes = 0;
