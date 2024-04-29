@@ -141,9 +141,15 @@ public class Cs2rtv : BasePlugin
         }
         else
         {
-            command.ReplyToCommand($"地图 {mapname} 不存在,地图列表已输出到控制台");
-            foreach (string map in maplist)
+            command.ReplyToCommand($"地图 {mapname} 不存在,地图列表已随机输出到控制台");
+            Random rnd = new Random();
+            var cachemaplist = maplist;
+            for(int x = 0; x <50; x++)
+            {
+                var map = maplist[rnd.Next(cachemaplist.Count-1)];
+                cachemaplist.Remove(map);
                 cCSPlayer!.PrintToConsole($"{map}");
+            }
         }
     }
 
