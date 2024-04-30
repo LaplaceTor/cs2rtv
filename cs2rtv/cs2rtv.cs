@@ -21,6 +21,8 @@ public class Cs2rtv : BasePlugin
     private List<string> mapnominatelist = new();
     private List<ulong> rtvcount = new();
     private List<string> votemaplist = new();
+    private bool isrtving = false;
+
     private bool isrtv = false;
     private bool rtvwin = false;
     private bool isrtvagain = false;
@@ -49,7 +51,7 @@ public class Cs2rtv : BasePlugin
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void RtvCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
     {
-        if (isrtv)
+        if (isrtving)
         {
             command.ReplyToCommand("投票已在进行中");
             return;
@@ -68,6 +70,7 @@ public class Cs2rtv : BasePlugin
         }
         else
         {
+            isrtving = true;
             isrtv = true;
             Server.PrintToChatAll("地图投票进行中");
             StartRtv();
@@ -80,11 +83,12 @@ public class Cs2rtv : BasePlugin
     [RequiresPermissions("@css/changemap")]
     public void ForceRtvCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
     {
-        if (isrtv)
+        if (isrtving)
         {
             command.ReplyToCommand("投票已在进行中");
             return;
         }
+        isrtving = true;
         isrtv = true;
         Server.PrintToChatAll($"管理员已强制开始地图投票");
         StartRtv();
@@ -94,7 +98,7 @@ public class Cs2rtv : BasePlugin
     [CommandHelper(minArgs: 1, usage: "[mapname]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void NominateCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
     {
-        if (isrtv)
+        if (isrtving)
         {
             command.ReplyToCommand("投票已在进行中");
             return;
@@ -190,7 +194,7 @@ public class Cs2rtv : BasePlugin
                 {
                     nextmap = mapname;
                     rtvwin = true;
-                    Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
+                    Server.PrintToChatAll($"地图投票已结束");
                     VoteEnd(nextmap);
                     return;
                 }
@@ -209,7 +213,7 @@ public class Cs2rtv : BasePlugin
             if (totalvotes == 0)
             {
                 nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
-                Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
+                Server.PrintToChatAll($"地图投票已结束");
                 rtvwin = true;
             }
             else if (votes.Select(x => x.Value).Max() > (totalvotes * 0.5f))
@@ -217,7 +221,7 @@ public class Cs2rtv : BasePlugin
                 int winnervotes = votes.Select(x => x.Value).Max();
                 IEnumerable<KeyValuePair<string, int>> winner = votes.Where(x => x.Value == winnervotes);
                 nextmap = winner.ElementAt(0).Key;
-                Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
+                Server.PrintToChatAll($"地图投票已结束");
                 rtvwin = true;
             }
             else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && votemaplist.Count >= 4 && totalvotes > 2)
@@ -231,7 +235,7 @@ public class Cs2rtv : BasePlugin
             else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && (votemaplist.Count < 4 || totalvotes <= 2))
             {
                 nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
-                Server.PrintToChatAll($"地图投票已结束，正在更换为地图 {nextmap}");
+                Server.PrintToChatAll($"地图投票已结束");
                 rtvwin = true;
             }
             VoteEnd(nextmap);
@@ -242,19 +246,22 @@ public class Cs2rtv : BasePlugin
     {
 
         if (rtvwin)
-        {
+        {            
+            if(mapname == Server.MapName)
+            {
+                Server.PrintToChatAll("地图不变");
+                if(!isrtv)
+                    AddTimer(30 * 60f,StartRtv,TimerFlags.STOP_ON_MAPCHANGE);
+                return;
+            }
             rtvwin = false;
             rtvcount.Clear();
             mapnominatelist.Clear();
             votemaplist.Clear();
             isrtv = false;
+            isrtving = false;
             isrtvagain = false;
-            if(mapname == Server.MapName)
-            {
-                Server.PrintToChatAll("地图已延长");
-                AddTimer(30 * 60f,StartRtv,TimerFlags.STOP_ON_MAPCHANGE);
-                return;
-            }
+            Server.PrintToChatAll($"正在更换为地图 {mapname}");
             Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
         }
         else
