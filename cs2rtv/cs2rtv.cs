@@ -40,7 +40,7 @@ public class Cs2rtv : BasePlugin
 
         RegisterListener<Listeners.OnMapStart>(OnMapStart =>
         {
-            AddTimer(30 * 60f,()=>
+            AddTimer(15 * 60f,()=>
             {
                 StartRtv();
             },TimerFlags.STOP_ON_MAPCHANGE);
@@ -145,10 +145,12 @@ public class Cs2rtv : BasePlugin
         }
         else
         {
-            Random rnd = new();
-            var index = rnd.Next(0, maplist.Count - 1);
-            var randommap = maplist[index];
-            command.ReplyToCommand($"地图 {mapname} 不存在,要不试试 {randommap}");
+            // Random rnd = new();
+            // var index = rnd.Next(0, maplist.Count - 1);
+            // var randommap = maplist[index];
+            List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
+            var randommap = findmapcache.FirstOrDefault();
+            command.ReplyToCommand($"地图 {mapname} 不存在,你是否在寻找 {randommap}");
         }
     }
 
@@ -171,7 +173,6 @@ public class Cs2rtv : BasePlugin
         int totalvotes = 0;
         Dictionary<string, int> votes = new();
         votes.Clear();
-        totalvotes = 0;
 
         votemenu.AddMenuOption("不更换地图", (player, options) =>
             {
@@ -251,18 +252,28 @@ public class Cs2rtv : BasePlugin
             {
                 Server.PrintToChatAll("地图不变");
                 if(!isrtv)
-                    AddTimer(30 * 60f,StartRtv,TimerFlags.STOP_ON_MAPCHANGE);
+                    AddTimer(15 * 60f,StartRtv,TimerFlags.STOP_ON_MAPCHANGE);
                 return;
             }
             rtvwin = false;
             rtvcount.Clear();
             mapnominatelist.Clear();
             votemaplist.Clear();
-            isrtv = false;
             isrtving = false;
             isrtvagain = false;
-            Server.PrintToChatAll($"正在更换为地图 {mapname}");
-            Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+            if(!isrtv)
+            {
+                AddTimer(5*60f,()=>
+                {
+                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
+                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+                },TimerFlags.STOP_ON_MAPCHANGE);
+            }else {
+                    isrtv = false;
+                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
+                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+
+            }
         }
         else
         {
