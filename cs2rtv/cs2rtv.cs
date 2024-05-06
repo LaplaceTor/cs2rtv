@@ -33,7 +33,7 @@ public class Cs2rtv : BasePlugin
         maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
         RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
         {
-            if (rtvcount.Contains(@event.Userid.SteamID))
+            if (rtvcount.Contains(@event.Userid!.SteamID))
                 rtvcount.Remove(@event.Userid.SteamID);
             return HookResult.Continue;
         });
@@ -173,13 +173,24 @@ public class Cs2rtv : BasePlugin
         int totalvotes = 0;
         Dictionary<string, int> votes = new();
         votes.Clear();
+        votes[Server.MapName] = 0;
 
         votemenu.AddMenuOption("不更换地图", (player, options) =>
             {
-                votes[Server.MapName] += 1;
+                var name = Server.MapName;
+                votes[name] += 1;
                 totalvotes += 1;
                 player.PrintToChat($"你已投票给不更换地图");
                 GetPlayersCount();
+                if (votes[name] > playercount * 0.5f)
+                {
+                    nextmap = name;
+                    rtvwin = true;
+                    Server.PrintToChatAll($"地图投票已结束");
+                    VoteEnd(nextmap);
+                    return;
+                }
+
             });
         
         foreach (string mapname in votemaplist)
@@ -209,8 +220,11 @@ public class Cs2rtv : BasePlugin
         {
             MenuManager.OpenChatMenu(player, votemenu);
         }
+
+
         Timer votetimer = AddTimer(30f, () =>
         {
+            if(!isrtving) return;
             if (totalvotes == 0)
             {
                 nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
@@ -248,21 +262,24 @@ public class Cs2rtv : BasePlugin
 
         if (rtvwin)
         {            
-            if(mapname == Server.MapName)
-            {
-                Server.PrintToChatAll("地图不变");
-                if(!isrtv)
-                    AddTimer(15 * 60f,StartRtv,TimerFlags.STOP_ON_MAPCHANGE);
-                return;
-            }
             rtvwin = false;
             rtvcount.Clear();
             mapnominatelist.Clear();
             votemaplist.Clear();
             isrtving = false;
             isrtvagain = false;
+            if(mapname == Server.MapName)
+            {
+                Server.PrintToChatAll($"地图已延长");
+                AddTimer(15 * 60f,()=>
+                {
+                    StartRtv();
+                },TimerFlags.STOP_ON_MAPCHANGE);
+                return;
+            }
             if(!isrtv)
             {
+                Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
                 AddTimer(5*60f,()=>
                 {
                     Server.PrintToChatAll($"正在更换为地图 {mapname}");
