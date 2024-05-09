@@ -22,7 +22,7 @@ public class Cs2rtv : BasePlugin
     private List<ulong> rtvcount = new();
     private List<string> votemaplist = new();
     private bool isrtving = false;
-
+    private bool isforcertv = false;
     private bool isrtv = false;
     private bool rtvwin = false;
     private bool isrtvagain = false;
@@ -90,6 +90,7 @@ public class Cs2rtv : BasePlugin
         }
         isrtving = true;
         isrtv = true;
+        isforcertv = true;
         Server.PrintToChatAll($"管理员已强制开始地图投票");
         StartRtv();
     }
@@ -145,9 +146,6 @@ public class Cs2rtv : BasePlugin
         }
         else
         {
-            // Random rnd = new();
-            // var index = rnd.Next(0, maplist.Count - 1);
-            // var randommap = maplist[index];
             List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
             var randommap = findmapcache.FirstOrDefault();
             command.ReplyToCommand($"地图 {mapname} 不存在,你是否在寻找 {randommap}");
@@ -161,10 +159,12 @@ public class Cs2rtv : BasePlugin
         if (!isrtvagain)
         {
             votemaplist = mapnominatelist;
-            while (votemaplist.Count < 5)
+            if(!isforcertv)
+                votemaplist.Add(Server.MapName);
+            while (votemaplist.Count < 6)
             {
                 int index = random.Next(0, maplist.Count - 1);
-                if (Server.MapName.Contains(maplist[index]) || mapnominatelist.Contains(maplist[index])) continue;
+                if (votemaplist.Contains(maplist[index]) || Server.MapName.Contains(maplist[index])) continue;
                 votemaplist.Add(maplist[index]);
             }
         }
@@ -173,29 +173,28 @@ public class Cs2rtv : BasePlugin
         int totalvotes = 0;
         Dictionary<string, int> votes = new();
         votes.Clear();
-        votes[Server.MapName] = 0;
-
-        votemenu.AddMenuOption("不更换地图", (player, options) =>
-            {
-                var name = Server.MapName;
-                votes[name] += 1;
-                totalvotes += 1;
-                player.PrintToChat($"你已投票给不更换地图");
-                GetPlayersCount();
-                if (votes[name] > playercount * 0.5f)
-                {
-                    nextmap = name;
-                    rtvwin = true;
-                    Server.PrintToChatAll($"地图投票已结束");
-                    VoteEnd(nextmap);
-                    return;
-                }
-
-            });
         
         foreach (string mapname in votemaplist)
         {
             votes[mapname] = 0;
+            if(mapname == Server.MapName)
+            {
+                votemenu.AddMenuOption("不更换地图", (player, options) =>
+                {
+                    votes[mapname] += 1;
+                    totalvotes += 1;
+                    player.PrintToChat($"你已投票给不更换地图");
+                    GetPlayersCount();
+                    if (votes[mapname] > playercount * 0.5f)
+                    {
+                        nextmap = mapname;
+                        rtvwin = true;
+                        Server.PrintToChatAll($"地图投票已结束");
+                        VoteEnd(nextmap);
+                        return;
+                    }
+                });
+            }else{
             votemenu.AddMenuOption(mapname, (player, options) =>
             {
                 votes[mapname] += 1;
@@ -211,6 +210,7 @@ public class Cs2rtv : BasePlugin
                     return;
                 }
             });
+            }
         }
 
         foreach (CCSPlayerController? player in Utilities.GetPlayers().Where((x) =>
@@ -268,6 +268,7 @@ public class Cs2rtv : BasePlugin
             votemaplist.Clear();
             isrtving = false;
             isrtvagain = false;
+            isforcertv = false;
             if(mapname == Server.MapName)
             {
                 Server.PrintToChatAll($"地图已延长");
