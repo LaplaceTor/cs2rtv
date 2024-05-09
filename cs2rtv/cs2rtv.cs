@@ -21,6 +21,7 @@ public class Cs2rtv : BasePlugin
     private List<string> mapnominatelist = new();
     private List<ulong> rtvcount = new();
     private List<string> votemaplist = new();
+    private bool canrtv = false;
     private bool isrtving = false;
     private bool isforcertv = false;
     private bool isrtv = false;
@@ -40,6 +41,10 @@ public class Cs2rtv : BasePlugin
 
         RegisterListener<Listeners.OnMapStart>(OnMapStart =>
         {
+            AddTimer(5 * 60f,()=>
+            {
+                canrtv = true;
+            },TimerFlags.STOP_ON_MAPCHANGE);
             AddTimer(15 * 60f,()=>
             {
                 StartRtv();
@@ -51,6 +56,11 @@ public class Cs2rtv : BasePlugin
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void RtvCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
     {
+        if(!canrtv)
+        {
+            command.ReplyToCommand("投票冷却中。。。");
+            return;
+        }
         if (isrtving)
         {
             command.ReplyToCommand("投票已在进行中");
@@ -269,13 +279,22 @@ public class Cs2rtv : BasePlugin
             isrtving = false;
             isrtvagain = false;
             isforcertv = false;
+            canrtv = false;
             if(mapname == Server.MapName)
             {
                 Server.PrintToChatAll($"地图已延长");
-                AddTimer(15 * 60f,()=>
+                AddTimer(5 * 60f,()=>
                 {
-                    StartRtv();
+                    canrtv = true;
                 },TimerFlags.STOP_ON_MAPCHANGE);
+                if(!isrtv)
+                {
+                    AddTimer(15 * 60f,()=>
+                    {
+                        StartRtv();
+                    },TimerFlags.STOP_ON_MAPCHANGE);
+                }else
+                    isrtv = false;
                 return;
             }
             if(!isrtv)
