@@ -41,11 +41,11 @@ public class Cs2rtv : BasePlugin
 
         RegisterListener<Listeners.OnMapStart>(OnMapStart =>
         {
-            AddTimer(5 * 60f, () =>
+            Timer timer1 = AddTimer(5 * 60f, () =>
             {
                 canrtv = true;
             }, TimerFlags.STOP_ON_MAPCHANGE);
-            AddTimer(15 * 60f, () =>
+            Timer timer2 = AddTimer(15 * 60f, () =>
             {
                 StartRtv();
             }, TimerFlags.STOP_ON_MAPCHANGE);
@@ -83,6 +83,7 @@ public class Cs2rtv : BasePlugin
             isrtving = true;
             isrtv = true;
             Server.PrintToChatAll("地图投票进行中");
+            rtvcount.Clear();
             StartRtv();
         }
     }
@@ -275,7 +276,7 @@ public class Cs2rtv : BasePlugin
         if (rtvwin)
         {
             rtvwin = false;
-            rtvcount.Clear();
+            // rtvcount.Clear();
             mapnominatelist.Clear();
             votemaplist.Clear();
             isrtving = false;
@@ -285,13 +286,13 @@ public class Cs2rtv : BasePlugin
             if (mapname == Server.MapName)
             {
                 Server.PrintToChatAll($"地图已延长");
-                AddTimer(5 * 60f, () =>
+                Timer timer1 = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
                 }, TimerFlags.STOP_ON_MAPCHANGE);
                 if (!isrtv)
                 {
-                    AddTimer(15 * 60f, () =>
+                    Timer timer2 = AddTimer(15 * 60f, () =>
                     {
                         StartRtv();
                     }, TimerFlags.STOP_ON_MAPCHANGE);
@@ -303,7 +304,7 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
-                AddTimer(5 * 60f, () =>
+                Timer timer3 = AddTimer(5 * 60f, () =>
                 {
                     Server.PrintToChatAll($"正在更换为地图 {mapname}");
                     Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
