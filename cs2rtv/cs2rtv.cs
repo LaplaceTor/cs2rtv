@@ -28,6 +28,9 @@ public class Cs2rtv : BasePlugin
     private bool rtvwin = false;
     private bool isrtvagain = false;
     private int playercount = 0;
+    private Timer? rtvcooldown;
+    private Timer? maptimer;
+    private Timer? rtvtimer;
     public override void Load(bool hotReload)
     {
         Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
@@ -41,11 +44,13 @@ public class Cs2rtv : BasePlugin
 
         RegisterListener<Listeners.OnMapStart>(OnMapStart =>
         {
-            Timer timer1 = AddTimer(5 * 60f, () =>
+            rtvcooldown!.Kill();
+            maptimer!.Kill();
+            rtvcooldown = AddTimer(5 * 60f, () =>
             {
                 canrtv = true;
             }, TimerFlags.STOP_ON_MAPCHANGE);
-            Timer timer2 = AddTimer(15 * 60f, () =>
+            maptimer = AddTimer(15 * 60f, () =>
             {
                 StartRtv();
             }, TimerFlags.STOP_ON_MAPCHANGE);
@@ -235,7 +240,8 @@ public class Cs2rtv : BasePlugin
         }
 
 
-        Timer votetimer = AddTimer(30f, () =>
+        rtvtimer!.Kill();
+        rtvtimer = AddTimer(30f, () =>
         {
             // if(!isrtving) return;
             if (totalvotes == 0)
@@ -283,16 +289,19 @@ public class Cs2rtv : BasePlugin
             isrtvagain = false;
             isforcertv = false;
             canrtv = false;
+            rtvcooldown!.Kill();
+            maptimer!.Kill();
+
             if (mapname == Server.MapName)
             {
                 Server.PrintToChatAll($"地图已延长");
-                Timer timer1 = AddTimer(5 * 60f, () =>
+                rtvcooldown = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
                 }, TimerFlags.STOP_ON_MAPCHANGE);
                 if (!isrtv)
                 {
-                    Timer timer2 = AddTimer(15 * 60f, () =>
+                    maptimer = AddTimer(15 * 60f, () =>
                     {
                         StartRtv();
                     }, TimerFlags.STOP_ON_MAPCHANGE);
@@ -304,7 +313,7 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
-                Timer timer3 = AddTimer(5 * 60f, () =>
+                rtvcooldown = AddTimer(5 * 60f, () =>
                 {
                     Server.PrintToChatAll($"正在更换为地图 {mapname}");
                     Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
