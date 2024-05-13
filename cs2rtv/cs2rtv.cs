@@ -25,12 +25,16 @@ public class Cs2rtv : BasePlugin
     private bool isrtving = false;
     private bool isforcertv = false;
     private bool isrtv = false;
+    private Timer? forcechangetimer;
     private bool rtvwin = false;
     private bool isrtvagain = false;
     private int playercount = 0;
-    private Timer? rtvcooldown;
+    private int rtvrequired = 0;
+    private Timer? canrtvtimer;
     private Timer? maptimer;
     private Timer? rtvtimer;
+    private Timer? forcertvtimer;
+
     public override void Load(bool hotReload)
     {
         Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
@@ -39,21 +43,46 @@ public class Cs2rtv : BasePlugin
         {
             if (rtvcount.Contains(@event.Userid!.SteamID))
                 rtvcount.Remove(@event.Userid.SteamID);
+            GetPlayersCount();
+            if (rtvcount.Count >= rtvrequired && playercount != 0)
+            {
+                isrtving = true;
+                isrtv = true;
+                Server.PrintToChatAll("地图投票进行中");
+                rtvcount.Clear();
+                StartRtv();
+            }
             return HookResult.Continue;
         });
 
         RegisterListener<Listeners.OnMapStart>(OnMapStart =>
         {
-            rtvcooldown!.Kill();
-            maptimer!.Kill();
-            rtvcooldown = AddTimer(5 * 60f, () =>
+            rtvwin = false;
+            rtvcount.Clear();
+            mapnominatelist.Clear();
+            votemaplist.Clear();
+            isrtving = false;
+            isrtvagain = false;
+            isforcertv = false;
+            canrtv = false;
+            if (canrtvtimer != null)
+                canrtvtimer.Kill();
+            canrtvtimer = AddTimer(5 * 60f, () =>
             {
                 canrtv = true;
-            }, TimerFlags.STOP_ON_MAPCHANGE);
+            });
+            if (maptimer != null)
+                maptimer.Kill();
             maptimer = AddTimer(15 * 60f, () =>
             {
                 StartRtv();
-            }, TimerFlags.STOP_ON_MAPCHANGE);
+            });
+            if (rtvtimer != null)
+                rtvtimer.Kill();
+            if (forcertvtimer != null)
+                forcertvtimer.Kill();
+            if (forcechangetimer != null)
+                forcechangetimer.Kill();
         });
     }
 
@@ -72,7 +101,7 @@ public class Cs2rtv : BasePlugin
             return;
         }
         GetPlayersCount();
-        int rtvrequired = (int)Math.Ceiling(playercount * 0.6f);
+
         if (rtvcount.Contains(cCSPlayer!.SteamID))
         {
             Server.PrintToChatAll($"{cCSPlayer.PlayerName} 已投票更换地图，当前 {rtvcount.Count}/{rtvrequired}");
@@ -200,15 +229,15 @@ public class Cs2rtv : BasePlugin
                     votes[mapname] += 1;
                     totalvotes += 1;
                     player.PrintToChat($"你已投票给不更换地图");
-                    // GetPlayersCount();
-                    // if (votes[mapname] > playercount * 0.5f)
-                    // {
-                    //     nextmap = mapname;
-                    //     rtvwin = true;
-                    //     Server.PrintToChatAll($"地图投票已结束");
-                    //     VoteEnd(nextmap);
-                    //     return;
-                    // }
+                    GetPlayersCount();
+                    if (votes[mapname] > rtvrequired)
+                    {
+                        nextmap = mapname;
+                        rtvwin = true;
+                        Server.PrintToChatAll($"地图投票已结束");
+                        VoteEnd(nextmap);
+                        return;
+                    }
                 });
             }
             else
@@ -218,15 +247,15 @@ public class Cs2rtv : BasePlugin
                     votes[mapname] += 1;
                     totalvotes += 1;
                     player.PrintToChat($"你已投票给地图 {mapname}");
-                    // GetPlayersCount();
-                    // if (votes[mapname] > playercount * 0.5f)
-                    // {
-                    //     nextmap = mapname;
-                    //     rtvwin = true;
-                    //     Server.PrintToChatAll($"地图投票已结束");
-                    //     VoteEnd(nextmap);
-                    //     return;
-                    // }
+                    GetPlayersCount();
+                    if (votes[mapname] > rtvrequired)
+                    {
+                        nextmap = mapname;
+                        rtvwin = true;
+                        Server.PrintToChatAll($"地图投票已结束");
+                        VoteEnd(nextmap);
+                        return;
+                    }
                 });
             }
         }
@@ -239,11 +268,12 @@ public class Cs2rtv : BasePlugin
             MenuManager.OpenChatMenu(player, votemenu);
         }
 
+        if (rtvtimer != null)
+            rtvtimer.Kill();
 
-        rtvtimer!.Kill();
         rtvtimer = AddTimer(30f, () =>
         {
-            // if(!isrtving) return;
+            if (!isrtving) return;
             if (totalvotes == 0)
             {
                 nextmap = votemaplist[random.Next(0, votemaplist.Count - 1)];
@@ -273,7 +303,7 @@ public class Cs2rtv : BasePlugin
                 rtvwin = true;
             }
             VoteEnd(nextmap);
-        }, TimerFlags.STOP_ON_MAPCHANGE);
+        });
     }
 
     public void VoteEnd(string mapname)
@@ -282,29 +312,31 @@ public class Cs2rtv : BasePlugin
         if (rtvwin)
         {
             rtvwin = false;
-            // rtvcount.Clear();
+            rtvcount.Clear();
             mapnominatelist.Clear();
             votemaplist.Clear();
             isrtving = false;
             isrtvagain = false;
             isforcertv = false;
             canrtv = false;
-            rtvcooldown!.Kill();
-            maptimer!.Kill();
 
             if (mapname == Server.MapName)
             {
                 Server.PrintToChatAll($"地图已延长");
-                rtvcooldown = AddTimer(5 * 60f, () =>
+                if (canrtvtimer != null)
+                    canrtvtimer.Kill();
+                canrtvtimer = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
-                }, TimerFlags.STOP_ON_MAPCHANGE);
+                });
                 if (!isrtv)
                 {
+                    if (maptimer != null)
+                        maptimer.Kill();
                     maptimer = AddTimer(15 * 60f, () =>
                     {
                         StartRtv();
-                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                    });
                 }
                 else
                     isrtv = false;
@@ -313,18 +345,53 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
-                rtvcooldown = AddTimer(5 * 60f, () =>
+                if (canrtvtimer != null)
+                    canrtvtimer.Kill();
+                canrtvtimer = AddTimer(5 * 60f, () =>
                 {
                     Server.PrintToChatAll($"正在更换为地图 {mapname}");
                     Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
-                }, TimerFlags.STOP_ON_MAPCHANGE);
+                });
+                if (forcechangetimer != null)
+                    forcechangetimer.Kill();
+                forcechangetimer = AddTimer(6 * 60f, () =>
+                {
+                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
+                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+                });
+                if (forcertvtimer != null)
+                    forcertvtimer.Kill();
+                forcertvtimer = AddTimer(7 * 60f, () =>
+                {
+                    isforcertv = true;
+                    Server.PrintToChatAll($"地图更换失败，请重新投票更换地图");
+                    StartRtv();
+                });
+
             }
             else
             {
                 isrtv = false;
-                Server.PrintToChatAll($"正在更换为地图 {mapname}");
-                Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
-
+                if (forcechangetimer != null)
+                    forcechangetimer.Kill();
+                forcechangetimer = AddTimer(1 * 60f, () =>
+                {
+                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
+                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+                });
+                if (forcertvtimer != null)
+                    forcertvtimer.Kill();
+                forcertvtimer = AddTimer(2 * 60f, () =>
+                {
+                    isforcertv = true;
+                    Server.PrintToChatAll($"地图更换失败，请重新投票更换地图");
+                    StartRtv();
+                });
+                Server.NextFrame(() =>
+                {
+                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
+                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+                });
             }
         }
         else
@@ -341,5 +408,7 @@ public class Cs2rtv : BasePlugin
         x.IsValid &&
         x.Connected == PlayerConnectedState.PlayerConnected
         ).Count();
+
+        rtvrequired = (int)Math.Ceiling(playercount * 0.6f);
     }
 }
