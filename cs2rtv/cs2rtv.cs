@@ -83,6 +83,7 @@ public class Cs2rtv : BasePlugin
                 });
                 maptimer = AddTimer(15 * 60f, () =>
                 {
+                    isrtving = true;
                     StartRtv();
                 });
             });
@@ -346,6 +347,7 @@ public class Cs2rtv : BasePlugin
                     {
                         maptimer = AddTimer(15 * 60f, () =>
                     {
+                        isrtving = true;
                         StartRtv();
                     });
                     });
