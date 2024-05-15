@@ -4,9 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
-using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
@@ -29,9 +27,9 @@ public class Cs2rtv : BasePlugin
     private bool isrtvagain = false;
     private int playercount = 0;
     private int rtvrequired = 0;
-    private Timer? canrtvtimer;
-    private Timer? maptimer;
-    private Timer? rtvtimer;
+    private Timer? _canrtvtimer;
+    private Timer? _maptimer;
+    private Timer? _rtvtimer;
 
     public override void Load(bool hotReload)
     {
@@ -63,19 +61,14 @@ public class Cs2rtv : BasePlugin
             isrtvagain = false;
             isforcertv = false;
             canrtv = false;
-            if (canrtvtimer != null)
-                canrtvtimer.Kill();
-            if (maptimer != null)
-                maptimer.Kill();
-            if (rtvtimer != null)
-                rtvtimer.Kill();
+            KillTimer();
             Server.NextFrame(() =>
             {
-                canrtvtimer = AddTimer(5 * 60f, () =>
+                _canrtvtimer = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
                 });
-                maptimer = AddTimer(15 * 60f, () =>
+                _maptimer = AddTimer(15 * 60f, () =>
                 {
                     isrtving = true;
                     StartRtv();
@@ -266,7 +259,7 @@ public class Cs2rtv : BasePlugin
             MenuManager.OpenChatMenu(player, votemenu);
         }
 
-        rtvtimer = AddTimer(30f, () =>
+        _rtvtimer = AddTimer(30f, () =>
         {
             if (!isrtving) return;
             if (totalvotes == 0)
@@ -313,28 +306,27 @@ public class Cs2rtv : BasePlugin
             isrtvagain = false;
             isforcertv = false;
             canrtv = false;
-            if (rtvtimer != null)
-                rtvtimer.Kill();
+            if (_rtvtimer != null)
+            {
+                _rtvtimer.Kill();
+                _rtvtimer = null;
+            }
 
             if (mapname == Server.MapName)
             {
                 Server.PrintToChatAll($"地图已延长");
-                if (canrtvtimer != null)
-                    canrtvtimer.Kill();
                 Server.NextFrame(() =>
                 {
-                    canrtvtimer = AddTimer(5 * 60f, () =>
+                    _canrtvtimer = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
                 });
                 });
                 if (!isrtv)
                 {
-                    if (maptimer != null)
-                        maptimer.Kill();
                     Server.NextFrame(() =>
                     {
-                        maptimer = AddTimer(15 * 60f, () =>
+                        _maptimer = AddTimer(15 * 60f, () =>
                     {
                         isrtving = true;
                         StartRtv();
@@ -349,26 +341,18 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
-                if (canrtvtimer != null)
-                    canrtvtimer.Kill();
-                Server.NextFrame(() =>
-                    {
-                        canrtvtimer = AddTimer(5 * 60f, () =>
+                        _canrtvtimer = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
                     Server.PrintToChatAll($"正在更换为地图 {mapname}");
                     Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
                 });
-                    });
             }
             else
             {
                 isrtv = false;
-                Server.NextFrame(() =>
-                {
                     Server.PrintToChatAll($"正在更换为地图 {mapname}");
                     Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
-                });
             }
         }
         else
@@ -378,6 +362,15 @@ public class Cs2rtv : BasePlugin
         }
     }
 
+    private void KillTimer()
+    {
+            if (_canrtvtimer != null)
+                _canrtvtimer.Kill();
+            if (_maptimer != null)
+                _maptimer.Kill();
+            if (_rtvtimer != null)
+                _rtvtimer.Kill();
+    }
     private void GetPlayersCount()
     {
         playercount = Utilities.GetPlayers().Where((x) =>
