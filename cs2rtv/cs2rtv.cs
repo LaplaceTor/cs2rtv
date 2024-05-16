@@ -55,15 +55,15 @@ public class Cs2rtv : BasePlugin
         {
             Server.NextFrame(() =>
             {
-            rtvwin = false;
-            rtvcount.Clear();
-            mapnominatelist.Clear();
-            votemaplist.Clear();
-            isrtving = false;
-            isrtvagain = false;
-            isforcertv = false;
-            canrtv = false;
-            KillTimer();
+                rtvwin = false;
+                rtvcount.Clear();
+                mapnominatelist.Clear();
+                votemaplist.Clear();
+                isrtving = false;
+                isrtvagain = false;
+                isforcertv = false;
+                canrtv = false;
+                KillTimer();
                 _canrtvtimer = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
@@ -341,18 +341,18 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
-                        _canrtvtimer = AddTimer(5 * 60f, () =>
-                {
-                    canrtv = true;
-                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
-                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
-                });
+                _canrtvtimer = AddTimer(5 * 60f, () =>
+        {
+            canrtv = true;
+            Server.PrintToChatAll($"正在更换为地图 {mapname}");
+            Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+        });
             }
             else
             {
                 isrtv = false;
-                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
-                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+                Server.PrintToChatAll($"正在更换为地图 {mapname}");
+                Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
             }
         }
         else
@@ -364,12 +364,12 @@ public class Cs2rtv : BasePlugin
 
     private void KillTimer()
     {
-            if (_canrtvtimer != null)
-                _canrtvtimer.Kill();
-            if (_maptimer != null)
-                _maptimer.Kill();
-            if (_rtvtimer != null)
-                _rtvtimer.Kill();
+        if (_canrtvtimer != null)
+            _canrtvtimer.Kill();
+        if (_maptimer != null)
+            _maptimer.Kill();
+        if (_rtvtimer != null)
+            _rtvtimer.Kill();
     }
     private void GetPlayersCount()
     {
