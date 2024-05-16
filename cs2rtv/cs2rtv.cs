@@ -53,6 +53,8 @@ public class Cs2rtv : BasePlugin
 
         RegisterListener<Listeners.OnMapStart>(OnMapStart =>
         {
+            Server.NextFrame(() =>
+            {
             rtvwin = false;
             rtvcount.Clear();
             mapnominatelist.Clear();
@@ -62,8 +64,6 @@ public class Cs2rtv : BasePlugin
             isforcertv = false;
             canrtv = false;
             KillTimer();
-            Server.NextFrame(() =>
-            {
                 _canrtvtimer = AddTimer(5 * 60f, () =>
                 {
                     canrtv = true;
