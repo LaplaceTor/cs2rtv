@@ -162,7 +162,7 @@ public class Cs2rtv : BasePlugin
 
         if (maplist.Contains(mapname) && mapname.Length > 2)
         {
-            mapname = maplist.Find(x => x.Contains(mapname));
+            mapname = maplist.Find(x => Regex.IsMatch(mapname, x));
             if (mapnominatelist.Contains(mapname!))
             {
                 command.ReplyToCommand($"地图 {mapname} 已被他人预定");
@@ -191,6 +191,7 @@ public class Cs2rtv : BasePlugin
 
     public void StartRtv()
     {
+        Logger.LogInformation("开始投票换图");
         Random random = new();
         GetPlayersCount();
         if(playercount == 0)
@@ -205,6 +206,7 @@ public class Cs2rtv : BasePlugin
                     else randommap = maplist[index];
                 }
                 rtvwin = true;
+                Logger.LogInformation("空服换图");
                 VoteEnd(randommap);
                 return;
             }
@@ -236,6 +238,7 @@ public class Cs2rtv : BasePlugin
                     votes[mapname] += 1;
                     totalvotes += 1;
                     player.PrintToChat($"你已投票给不更换地图");
+                    Logger.LogInformation("{PlayerName} 投票给不换图", player.PlayerName);
                     GetPlayersCount();
                     if (votes[mapname] > rtvrequired)
                     {
@@ -254,6 +257,7 @@ public class Cs2rtv : BasePlugin
                     votes[mapname] += 1;
                     totalvotes += 1;
                     player.PrintToChat($"你已投票给地图 {mapname}");
+                    Logger.LogInformation("{PlayerName} 投票给地图 {mapname}", player.PlayerName, mapname);
                     GetPlayersCount();
                     if (votes[mapname] > rtvrequired)
                     {
@@ -331,6 +335,7 @@ public class Cs2rtv : BasePlugin
             if (mapname == Server.MapName)
             {
                 Server.PrintToChatAll($"地图已延长");
+                Logger.LogInformation("地图已延长");
                 Server.NextFrame(() =>
                 {
                     _canrtvtimer = AddTimer(5 * 60f, () =>
@@ -354,6 +359,7 @@ public class Cs2rtv : BasePlugin
                 return;
             }
             mapnominatelist.Clear();
+            Logger.LogInformation("投票决定为 {mapname}",mapname);
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
