@@ -192,6 +192,22 @@ public class Cs2rtv : BasePlugin
     public void StartRtv()
     {
         Random random = new();
+        GetPlayersCount();
+        if(playercount == 0)
+            {
+                isrtv = true;
+                isforcertv = true;
+                string? randommap = null;
+                while(randommap == null)
+                {
+                    int index = random.Next(0, maplist.Count - 1);
+                    if(Server.MapName.Contains(maplist[index])) continue;
+                    else randommap = maplist[index];
+                }
+                rtvwin = true;
+                VoteEnd(randommap);
+                return;
+            }
         if (!isrtvagain)
         {
             votemaplist = mapnominatelist;
