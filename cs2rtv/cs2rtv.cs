@@ -71,6 +71,7 @@ public class Cs2rtv : BasePlugin
                 _maptimer = AddTimer(15 * 60f, () =>
                 {
                     isrtving = true;
+                    Server.PrintToChatAll("当前地图时长还剩5分钟");
                     StartRtv();
                 });
             });
@@ -350,6 +351,7 @@ public class Cs2rtv : BasePlugin
                         _maptimer = AddTimer(15 * 60f, () =>
                     {
                         isrtving = true;
+                        Server.PrintToChatAll("当前地图时长还剩5分钟");
                         StartRtv();
                     });
                     });
@@ -363,6 +365,18 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
+                AddTimer(4 * 60f, () =>
+                {
+                    Server.PrintToChatAll("距离换图还有60s");
+                });
+                AddTimer(9 * 30f, () =>
+                {
+                    Server.PrintToChatAll("距离换图还有30s");
+                });
+                AddTimer(29 * 10f, () =>
+                {
+                    Server.PrintToChatAll("距离换图还有10s");
+                });
                 _canrtvtimer = AddTimer(5 * 60f, () =>
         {
             canrtv = true;
