@@ -18,7 +18,7 @@ env:
   BUILD_NUMBER: ${{ github.run_number }}
   PROJECT_PATH: "cs2rtv/cs2rtv.csproj"
   PROJECT_NAME: "cs2rtv"
-  OUTPUT_PATH: "./cs2rtv"
+  OUTPUT_PATH: "./cs2rtvlite"
 
 jobs:
 
@@ -39,6 +39,6 @@ jobs:
     - name: Archive build
       uses: actions/upload-artifact@v4
       with:
-        name: cs2rtv
-        path: cs2rtv
+        name: cs2rtvlite
+        path: cs2rtvlite
         retention-days: 5
