@@ -37,7 +37,8 @@ jobs:
     - name: Build
       run: dotnet build ${{ env.PROJECT_PATH }} -c cs2rtv -o ${{ env.OUTPUT_PATH }}
     - name: Archive build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cs2rtv
         path: cs2rtv
+        retention-days: 5
