@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -18,13 +19,16 @@ public class Cs2rtv : BasePlugin
     private List<string> maplist = new();
     private List<string> mapnominatelist = new();
     private List<ulong> rtvcount = new();
+    private List<ulong> extcount = new();
     private List<string> votemaplist = new();
+    private List<string> mapcooldown = new();
     private bool canrtv = false;
     private bool isrtving = false;
     private bool isforcertv = false;
     private bool isrtv = false;
     private bool rtvwin = false;
     private bool isrtvagain = false;
+    private bool isext = false;
     private int playercount = 0;
     private int rtvrequired = 0;
     private Timer? _canrtvtimer;
@@ -35,10 +39,14 @@ public class Cs2rtv : BasePlugin
     {
         Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
         maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
+        mapcooldown.Add(Server.MapName);
+        
         RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
         {
             if (rtvcount.Contains(@event.Userid!.SteamID))
                 rtvcount.Remove(@event.Userid.SteamID);
+            if (extcount.Contains(@event.Userid!.SteamID))
+                extcount.Remove(@event.Userid.SteamID);
             GetPlayersCount();
             if (rtvcount.Count >= rtvrequired && playercount != 0)
             {
@@ -48,6 +56,12 @@ public class Cs2rtv : BasePlugin
                 rtvcount.Clear();
                 StartRtv();
             }
+            if (extcount.Count >= rtvrequired && playercount != 0)
+            {
+                isext = true;
+                Server.PrintToChatAll("地图已延长");
+                extcount.Clear();
+            }
             return HookResult.Continue;
         });
 
@@ -55,8 +69,13 @@ public class Cs2rtv : BasePlugin
         {
             Server.NextFrame(() =>
             {
+                mapcooldown.Add(Server.MapName);
+                if(mapcooldown.Count > 5)
+                    mapcooldown.Remove(mapcooldown.First());
+                
                 rtvwin = false;
                 rtvcount.Clear();
+                extcount.Clear();
                 mapnominatelist.Clear();
                 votemaplist.Clear();
                 isrtving = false;
@@ -71,7 +90,8 @@ public class Cs2rtv : BasePlugin
                 _maptimer = AddTimer(15 * 60f, () =>
                 {
                     isrtving = true;
-                    Server.PrintToChatAll("当前地图时长还剩5分钟");
+                    if(!isext)
+                        Server.PrintToChatAll("当前地图时长还剩5分钟");
                     StartRtv();
                 });
             });
@@ -113,7 +133,43 @@ public class Cs2rtv : BasePlugin
             StartRtv();
         }
     }
-
+    [ConsoleCommand("css_ext")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void ExtCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
+    {
+        if (!canrtv)
+        {
+            command.ReplyToCommand("投票冷却中。。。");
+            return;
+        }
+        if (isrtving)
+        {
+            command.ReplyToCommand("投票已在进行中");
+            return;
+        }
+        if(isext)
+        {
+            command.ReplyToCommand("短时间内只能延长一次哦，下次投票再看看要不要延长吧");
+            return;
+        }
+        GetPlayersCount();
+        if (extcount.Contains(cCSPlayer!.SteamID))
+        {
+            Server.PrintToChatAll($"{cCSPlayer.PlayerName} 已投票延长地图，当前 {extcount.Count}/{rtvrequired}");
+            return;
+        }
+        extcount.Add(cCSPlayer.SteamID);
+        if (extcount.Count < rtvrequired)
+        {
+            Server.PrintToChatAll($"{cCSPlayer.PlayerName} 已投票延长地图，当前 {extcount.Count}/{rtvrequired}");
+        }
+        else
+        {
+            isext = true;
+            Server.PrintToChatAll("地图已延长");
+            extcount.Clear();
+        }
+    }
 
     [ConsoleCommand("css_forcertv")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
@@ -164,7 +220,7 @@ public class Cs2rtv : BasePlugin
         if (maplist.Contains(mapname) && mapname.Length > 2)
         {
             mapname = maplist.Find(x => Regex.IsMatch(mapname, x));
-            if (mapnominatelist.Contains(mapname!))
+            if (mapnominatelist.Find(x => Regex.IsMatch(mapname!, x)) != null)
             {
                 command.ReplyToCommand($"地图 {mapname} 已被他人预定");
                 return;
@@ -172,6 +228,11 @@ public class Cs2rtv : BasePlugin
             else if (mapname == Server.MapName)
             {
                 command.ReplyToCommand($"地图 {mapname} 为当前地图");
+                return;
+            }
+            else if (mapcooldown.Find(x => Regex.IsMatch(mapname!, x)) != null)
+            {
+                command.ReplyToCommand($"地图 {mapname} 最近已经游玩过了");
                 return;
             }
             mapnominatelist.Add(mapname!);
@@ -185,13 +246,20 @@ public class Cs2rtv : BasePlugin
         {
             List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
             var randommap = findmapcache.FirstOrDefault();
-            command.ReplyToCommand($"地图 {mapname} 不存在,你是否在寻找 {randommap}");
+            command.ReplyToCommand($"你是否在寻找 {randommap}");
         }
     }
 
 
     public void StartRtv()
     {
+        if(isext)
+        {
+            rtvwin = true;
+            VoteEnd(Server.MapName);
+            isext = false;
+            return;
+        }
         Logger.LogInformation("开始投票换图");
         Random random = new();
         GetPlayersCount();
@@ -203,7 +271,7 @@ public class Cs2rtv : BasePlugin
                 while(randommap == null)
                 {
                     int index = random.Next(0, maplist.Count - 1);
-                    if(Server.MapName.Contains(maplist[index])) continue;
+                    if(mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null) continue;
                     else randommap = maplist[index];
                 }
                 rtvwin = true;
@@ -219,7 +287,7 @@ public class Cs2rtv : BasePlugin
             while (votemaplist.Count < 6)
             {
                 int index = random.Next(0, maplist.Count - 1);
-                if (votemaplist.Contains(maplist[index]) || Server.MapName.Contains(maplist[index])) continue;
+                if (votemaplist.Find(x => Regex.IsMatch(maplist[index], x)) != null || mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null) continue;
                 votemaplist.Add(maplist[index]);
             }
         }
@@ -321,12 +389,16 @@ public class Cs2rtv : BasePlugin
         if (rtvwin)
         {
             rtvwin = false;
-            rtvcount.Clear();
+            if(!isext)
+            {
+                rtvcount.Clear();
+                canrtv = false;
+            }
             votemaplist.Clear();
             isrtving = false;
             isrtvagain = false;
             isforcertv = false;
-            canrtv = false;
+            
             if (_rtvtimer != null)
             {
                 _rtvtimer.Kill();
@@ -335,6 +407,8 @@ public class Cs2rtv : BasePlugin
 
             if (mapname == Server.MapName)
             {
+                if(!isext)
+                {
                 Server.PrintToChatAll($"地图已延长");
                 Logger.LogInformation("地图已延长");
                 Server.NextFrame(() =>
@@ -344,11 +418,12 @@ public class Cs2rtv : BasePlugin
                     canrtv = true;
                 });
                 });
+                }
                 if (!isrtv)
                 {
                     Server.NextFrame(() =>
                     {
-                        _maptimer = AddTimer(15 * 60f, () =>
+                    _maptimer = AddTimer(15 * 60f, () =>
                     {
                         isrtving = true;
                         Server.PrintToChatAll("当前地图时长还剩5分钟");
@@ -365,15 +440,15 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
-                AddTimer(4 * 60f, () =>
+                AddTimer(240f, () =>
                 {
                     Server.PrintToChatAll("距离换图还有60s");
                 });
-                AddTimer(9 * 30f, () =>
+                AddTimer(270f, () =>
                 {
                     Server.PrintToChatAll("距离换图还有30s");
                 });
-                AddTimer(29 * 10f, () =>
+                AddTimer(290f, () =>
                 {
                     Server.PrintToChatAll("距离换图还有10s");
                 });
