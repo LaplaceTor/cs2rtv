@@ -70,7 +70,7 @@ public class Cs2rtv : BasePlugin
         {
             if(!hotReload  && !firstmaprandom)
             {
-                if(!Server.MapName.Contains("de_"))
+                if(!Regex.IsMatch(Server.MapName, @$"\bde_"))
                 {
                     Server.NextFrame(()=>
                     {
@@ -105,7 +105,7 @@ public class Cs2rtv : BasePlugin
                 {
                     canrtv = true;
                 });
-                _maptimer = AddTimer(25 * 60f, () =>
+                _maptimer = AddTimer(15 * 60f, () =>
                 {
                     isrtving = true;
                     if (!isext)
@@ -440,7 +440,7 @@ public class Cs2rtv : BasePlugin
                 {
                     Server.NextFrame(() =>
                     {
-                        _maptimer = AddTimer(25 * 60f, () =>
+                        _maptimer = AddTimer(15 * 60f, () =>
                         {
                             isrtving = true;
                             Server.PrintToChatAll("当前地图时长还剩5分钟");
