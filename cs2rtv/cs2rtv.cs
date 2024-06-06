@@ -40,7 +40,7 @@ public class Cs2rtv : BasePlugin
         Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
         maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
         mapcooldown.Add(Server.MapName);
-        
+
         RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
         {
             if (rtvcount.Contains(@event.Userid!.SteamID))
@@ -70,9 +70,9 @@ public class Cs2rtv : BasePlugin
             Server.NextFrame(() =>
             {
                 mapcooldown.Add(Server.MapName);
-                if(mapcooldown.Count > 5)
+                if (mapcooldown.Count > 5)
                     mapcooldown.Remove(mapcooldown.First());
-                
+
                 rtvwin = false;
                 rtvcount.Clear();
                 extcount.Clear();
@@ -87,10 +87,10 @@ public class Cs2rtv : BasePlugin
                 {
                     canrtv = true;
                 });
-                _maptimer = AddTimer(15 * 60f, () =>
+                _maptimer = AddTimer(25 * 60f, () =>
                 {
                     isrtving = true;
-                    if(!isext)
+                    if (!isext)
                         Server.PrintToChatAll("当前地图时长还剩5分钟");
                     StartRtv();
                 });
@@ -133,6 +133,7 @@ public class Cs2rtv : BasePlugin
             StartRtv();
         }
     }
+    
     [ConsoleCommand("css_ext")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void ExtCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
@@ -147,7 +148,7 @@ public class Cs2rtv : BasePlugin
             command.ReplyToCommand("投票已在进行中");
             return;
         }
-        if(isext)
+        if (isext)
         {
             command.ReplyToCommand("短时间内只能延长一次哦，下次投票再看看要不要延长吧");
             return;
@@ -253,7 +254,7 @@ public class Cs2rtv : BasePlugin
 
     public void StartRtv()
     {
-        if(isext)
+        if (isext)
         {
             rtvwin = true;
             VoteEnd(Server.MapName);
@@ -263,22 +264,22 @@ public class Cs2rtv : BasePlugin
         Logger.LogInformation("开始投票换图");
         Random random = new();
         GetPlayersCount();
-        if(playercount == 0)
+        if (playercount == 0)
+        {
+            isrtv = true;
+            isforcertv = true;
+            string? randommap = null;
+            while (randommap == null)
             {
-                isrtv = true;
-                isforcertv = true;
-                string? randommap = null;
-                while(randommap == null)
-                {
-                    int index = random.Next(0, maplist.Count - 1);
-                    if(mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null) continue;
-                    else randommap = maplist[index];
-                }
-                rtvwin = true;
-                Logger.LogInformation("空服换图");
-                VoteEnd(randommap);
-                return;
+                int index = random.Next(0, maplist.Count - 1);
+                if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null) continue;
+                else randommap = maplist[index];
             }
+            rtvwin = true;
+            Logger.LogInformation("空服换图");
+            VoteEnd(randommap);
+            return;
+        }
         if (!isrtvagain)
         {
             votemaplist = mapnominatelist;
@@ -389,7 +390,7 @@ public class Cs2rtv : BasePlugin
         if (rtvwin)
         {
             rtvwin = false;
-            if(!isext)
+            if (!isext)
             {
                 rtvcount.Clear();
                 canrtv = false;
@@ -398,7 +399,7 @@ public class Cs2rtv : BasePlugin
             isrtving = false;
             isrtvagain = false;
             isforcertv = false;
-            
+
             if (_rtvtimer != null)
             {
                 _rtvtimer.Kill();
@@ -407,28 +408,28 @@ public class Cs2rtv : BasePlugin
 
             if (mapname == Server.MapName)
             {
-                if(!isext)
+                if (!isext)
                 {
-                Server.PrintToChatAll($"地图已延长");
-                Logger.LogInformation("地图已延长");
-                Server.NextFrame(() =>
-                {
-                    _canrtvtimer = AddTimer(5 * 60f, () =>
-                {
-                    canrtv = true;
-                });
-                });
+                    Server.PrintToChatAll($"地图已延长");
+                    Logger.LogInformation("地图已延长");
+                    Server.NextFrame(() =>
+                    {
+                        _canrtvtimer = AddTimer(5 * 60f, () =>
+                    {
+                        canrtv = true;
+                    });
+                    });
                 }
                 if (!isrtv)
                 {
                     Server.NextFrame(() =>
                     {
-                    _maptimer = AddTimer(15 * 60f, () =>
-                    {
-                        isrtving = true;
-                        Server.PrintToChatAll("当前地图时长还剩5分钟");
-                        StartRtv();
-                    });
+                        _maptimer = AddTimer(25 * 60f, () =>
+                        {
+                            isrtving = true;
+                            Server.PrintToChatAll("当前地图时长还剩5分钟");
+                            StartRtv();
+                        });
                     });
                 }
                 else
@@ -436,7 +437,7 @@ public class Cs2rtv : BasePlugin
                 return;
             }
             mapnominatelist.Clear();
-            Logger.LogInformation("投票决定为 {mapname}",mapname);
+            Logger.LogInformation("投票决定为 {mapname}", mapname);
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
@@ -462,6 +463,7 @@ public class Cs2rtv : BasePlugin
             else
             {
                 isrtv = false;
+                canrtv = true;
                 Server.PrintToChatAll($"正在更换为地图 {mapname}");
                 Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
             }
