@@ -23,6 +23,7 @@ public class Cs2rtv : BasePlugin
     private List<string> votemaplist = new();
     private List<string> mapcooldown = new();
     private bool canrtv = false;
+    private bool firstmaprandom = false;
     private bool isrtving = false;
     private bool isforcertv = false;
     private bool isrtv = false;
@@ -67,6 +68,23 @@ public class Cs2rtv : BasePlugin
 
         RegisterListener<Listeners.OnMapStart>(OnMapStart =>
         {
+            if(!hotReload  && !firstmaprandom)
+            {
+                if(!Server.MapName.Contains("de"))
+                {
+                    Server.NextFrame(()=>
+                    {
+                        firstmaprandom = true;
+                        Random random = new();
+                        int index = random.Next(0, maplist.Count - 1);
+                        var randommap = maplist[index];
+                        if(randommap == Server.MapName)
+                            return;
+                        Server.ExecuteCommand($"ds_workshop_changelevel {randommap}");
+                    });
+                    return;
+                }
+            }
             Server.NextFrame(() =>
             {
                 mapcooldown.Add(Server.MapName);
