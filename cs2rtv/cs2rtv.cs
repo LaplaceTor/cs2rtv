@@ -70,7 +70,7 @@ public class Cs2rtv : BasePlugin
         {
             if(!hotReload  && !firstmaprandom)
             {
-                if(!Server.MapName.Contains("de"))
+                if(!Server.MapName.Contains("de_"))
                 {
                     Server.NextFrame(()=>
                     {
@@ -286,13 +286,11 @@ public class Cs2rtv : BasePlugin
         {
             isrtv = true;
             isforcertv = true;
-            string? randommap = null;
-            while (randommap == null)
-            {
-                int index = random.Next(0, maplist.Count - 1);
-                if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null) continue;
-                else randommap = maplist[index];
-            }
+            var randommap = "";
+            int index = random.Next(0, maplist.Count - 1);
+            if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) == null)
+                randommap = maplist[index];
+
             rtvwin = true;
             Logger.LogInformation("空服换图");
             VoteEnd(randommap);
