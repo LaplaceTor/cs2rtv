@@ -40,7 +40,6 @@ public class Cs2rtv : BasePlugin
     {
         Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
         maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
-        mapcooldown.Add(Server.MapName);
 
         RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
         {
@@ -105,7 +104,7 @@ public class Cs2rtv : BasePlugin
                 {
                     canrtv = true;
                 });
-                _maptimer = AddTimer(15 * 60f, () =>
+                _maptimer = AddTimer(25 * 60f, () =>
                 {
                     isrtving = true;
                     if (!isext)
@@ -288,10 +287,16 @@ public class Cs2rtv : BasePlugin
             isforcertv = true;
             var randommap = "";
             int index = random.Next(0, maplist.Count - 1);
-            if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) == null)
-                randommap = maplist[index];
-
-            rtvwin = true;
+            while(!rtvwin)
+            {
+                if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null) 
+                    continue;
+                else
+                {
+                    randommap = maplist[index];
+                    rtvwin = true;
+                }
+            }
             Logger.LogInformation("空服换图");
             VoteEnd(randommap);
             return;
@@ -440,7 +445,7 @@ public class Cs2rtv : BasePlugin
                 {
                     Server.NextFrame(() =>
                     {
-                        _maptimer = AddTimer(15 * 60f, () =>
+                        _maptimer = AddTimer(25 * 60f, () =>
                         {
                             isrtving = true;
                             Server.PrintToChatAll("当前地图时长还剩5分钟");
