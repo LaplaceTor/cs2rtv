@@ -212,8 +212,24 @@ public class Cs2rtv : BasePlugin
 
         if (hotReload)
         {
-            canrtv = true;
-            _maptimer = AddTimer(15 * 60f, () =>
+            Server.NextFrame(() =>
+            {
+                mapcooldown.Add(Server.MapName);
+                if (mapcooldown.Count > 5)
+                    mapcooldown.Remove(mapcooldown.First());
+
+                rtvwin = false;
+                rtvcount.Clear();
+                extcount.Clear();
+                mapnominatelist.Clear();
+                votemaplist.Clear();
+                isrtving = false;
+                isrtvagain = false;
+                isext = false;
+                // isforcertv = false;
+                canrtv = true;
+                KillTimer();
+                _maptimer = AddTimer(15 * 60f, () =>
                 {
                     isrtving = true;
                     if (!isext)
@@ -249,6 +265,7 @@ public class Cs2rtv : BasePlugin
                 {
                     timeleft --;
                 },TimerFlags.REPEAT);
+            });
         }
         RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
         {
@@ -409,7 +426,7 @@ public class Cs2rtv : BasePlugin
         {
             isrtving = true;
             isrtv = true;
-            Server.PrintToChatAll("地图投票进行中");
+            // Server.PrintToChatAll("地图投票进行中");
             rtvcount.Clear();
             var x = 0;
             _repeattimer = AddTimer(1f, () =>
@@ -705,13 +722,18 @@ public class Cs2rtv : BasePlugin
                     if (keyValuePair.Value == 0)
                         votes.Remove(keyValuePair.Key);
                 votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
+                var y = votemaplist.Count();
                 votemaplist.Clear();
-                for (int x = 0; x < (votes.Count / 2); x++)
+                var x = 0;
+                while (x < (y * 0.5f))
                 {
                     if (votes.ElementAt(x).Key != null)
+                    {
                         votemaplist!.Add(votes.ElementAt(x).Key);
+                        x++;
+                    }
                     else
-                        break;
+                        continue;
                 }
             }
             else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && (votemaplist.Count < 4 || totalvotes <= 2))
