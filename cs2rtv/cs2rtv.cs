@@ -284,6 +284,7 @@ public class Cs2rtv : BasePlugin
                 votemaplist.Clear();
                 isrtving = false;
                 isrtvagain = false;
+                isext = false;
                 // isforcertv = false;
                 canrtv = false;
                 KillTimer();
@@ -316,6 +317,9 @@ public class Cs2rtv : BasePlugin
                                     Server.NextFrame(() => _repeattimer.Kill());
                             }
                         }, TimerFlags.REPEAT);
+                    }else
+                    {
+                        StartRtv();
                     }
 
                 });
@@ -735,6 +739,9 @@ public class Cs2rtv : BasePlugin
                                             Server.NextFrame(() => _repeattimer.Kill());
                                     }
                                 }, TimerFlags.REPEAT);
+                            }else
+                            {
+                                StartRtv();
                             }
 
                         });
