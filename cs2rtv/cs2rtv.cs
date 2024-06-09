@@ -40,6 +40,9 @@ public class Cs2rtv : BasePlugin
     private Timer? _rtvtimer;
     private Timer? _repeattimer;
 
+    private int timeleft = 0;
+    private Timer? _timelefttimer;
+
     private List<string> rtvmusiclist =
     [
         "Music.BombPlanted.3kliksphilip_01",
@@ -208,8 +211,45 @@ public class Cs2rtv : BasePlugin
         EmitSoundExtension.Init();
 
         if (hotReload)
+        {
             canrtv = true;
+            _maptimer = AddTimer(15 * 60f, () =>
+                {
+                    isrtving = true;
+                    if (!isext)
+                    {
+                        var x = 0;
+                        _repeattimer = AddTimer(1f, () =>
+                        {
+                            if (x < 10)
+                            {
+                                foreach (var player in IsPlayer())
+                                {
+                                    playClientSound(player, "Alert.WarmupTimeoutBeep", 0.5f, 1f);
+                                    // player.ExecuteClientCommand("play Alert.WarmupTimeoutBeep");
+                                    player.PrintToChat("当前地图时长还剩5分钟");
+                                }
+                                x++;
+                            }
+                            else
+                            {
+                                StartRtv();
+                                if (_repeattimer != null)
+                                    Server.NextFrame(() => _repeattimer.Kill());
+                            }
+                        }, TimerFlags.REPEAT);
+                    }else
+                    {
+                        StartRtv();
+                    }
 
+                });
+                timeleft = 15;
+                _timelefttimer = AddTimer(60f, ()=>
+                {
+                    timeleft --;
+                },TimerFlags.REPEAT);
+        }
         RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
         {
             if (rtvcount.Contains(@event.Userid!.SteamID))
@@ -247,6 +287,7 @@ public class Cs2rtv : BasePlugin
             {
                 isext = true;
                 Server.PrintToChatAll("地图已延长");
+                timeleft += 15;
                 extcount.Clear();
             }
             return HookResult.Continue;
@@ -292,7 +333,7 @@ public class Cs2rtv : BasePlugin
                 {
                     canrtv = true;
                 });
-                _maptimer = AddTimer(25 * 60f, () =>
+                _maptimer = AddTimer(15 * 60f, () =>
                 {
                     isrtving = true;
                     if (!isext)
@@ -323,8 +364,19 @@ public class Cs2rtv : BasePlugin
                     }
 
                 });
+                timeleft = 15;
+                _timelefttimer = AddTimer(60f, ()=>
+                {
+                    timeleft --;
+                },TimerFlags.REPEAT);
             });
         });
+    }
+    [ConsoleCommand("css_timeleft")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    public void TimeleftCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
+    {
+        cCSPlayer!.PrintToChat($"当前地图还剩余 {timeleft} 分钟");
     }
 
     [ConsoleCommand("css_rtv")]
@@ -416,6 +468,7 @@ public class Cs2rtv : BasePlugin
         {
             isext = true;
             Server.PrintToChatAll("地图已延长");
+            timeleft +=15;
             extcount.Clear();
         }
     }
@@ -454,8 +507,6 @@ public class Cs2rtv : BasePlugin
                     Server.NextFrame(() => _repeattimer.Kill());
             }
         }, TimerFlags.REPEAT);
-
-
     }
 
     [ConsoleCommand("css_nominate")]
@@ -714,7 +765,7 @@ public class Cs2rtv : BasePlugin
                 {
                     Server.NextFrame(() =>
                     {
-                        _maptimer = AddTimer(25 * 60f, () =>
+                        _maptimer = AddTimer(15 * 60f, () =>
                         {
                             isrtving = true;
                             if (!isext)
@@ -745,6 +796,7 @@ public class Cs2rtv : BasePlugin
                             }
 
                         });
+                        timeleft = 15;
                     });
                 }
                 else
@@ -756,6 +808,7 @@ public class Cs2rtv : BasePlugin
             if (!isrtv)
             {
                 Server.PrintToChatAll($"5分钟后将更换为地图 {mapname}");
+                timeleft = 5;
                 AddTimer(240f, () =>
                 {
                     Server.PrintToChatAll("距离换图还有60s");
@@ -774,11 +827,11 @@ public class Cs2rtv : BasePlugin
                         playClientSound(player, music, 0.5f, 1f);
                 });
                 _canrtvtimer = AddTimer(5 * 60f, () =>
-        {
-            canrtv = true;
-            Server.PrintToChatAll($"正在更换为地图 {mapname}");
-            Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
-        });
+                {
+                    canrtv = true;
+                    Server.PrintToChatAll($"正在更换为地图 {mapname}");
+                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+                });
             }
             else
             {
@@ -822,6 +875,8 @@ public class Cs2rtv : BasePlugin
             _maptimer.Kill();
         if (_rtvtimer != null)
             _rtvtimer.Kill();
+        if(_timelefttimer != null)
+            _timelefttimer.Kill();
     }
     private void GetPlayersCount()
     {
