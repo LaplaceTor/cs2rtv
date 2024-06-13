@@ -367,7 +367,7 @@ public class Cs2rtv : BasePlugin
     public void ForceExtCommand(CCSPlayerController? cCSPlayer,CommandInfo command)
     {
         timeleft+=30;
-        Server.PrintToChatAll($"管理员已延长地图");
+        Server.PrintToChatAll("管理员已延长地图");
     }
 
     [ConsoleCommand("css_ext")]
@@ -429,7 +429,7 @@ public class Cs2rtv : BasePlugin
             foreach (var player in IsPlayer())
             {
                 playClientSound(player, "Alert.WarmupTimeoutBeep");
-                player.PrintToChat($"管理员已强制开始地图投票");
+                player.PrintToChat("管理员已强制开始地图投票");
             }
             if(x == 10)
                 Server.NextFrame(()=>StartRtv());
@@ -566,14 +566,14 @@ public class Cs2rtv : BasePlugin
                 {
                     votes[mapname] += 1;
                     totalvotes += 1;
-                    player.PrintToChat($"你已投票给不更换地图");
+                    player.PrintToChat("你已投票给不更换地图");
                     Logger.LogInformation("{PlayerName} 投票给不换图", player.PlayerName);
                     GetPlayersCount();
                     if (votes[mapname] >= rtvrequired)
                     {
                         nextmap = mapname;
                         rtvwin = true;
-                        Server.PrintToChatAll($"地图投票已结束");
+                        Server.PrintToChatAll("地图投票已结束");
                         VoteEnd(nextmap);
                         return;
                     }
@@ -592,7 +592,7 @@ public class Cs2rtv : BasePlugin
                     {
                         nextmap = mapname;
                         rtvwin = true;
-                        Server.PrintToChatAll($"地图投票已结束");
+                        Server.PrintToChatAll("地图投票已结束");
                         VoteEnd(nextmap);
                         return;
                     }
@@ -609,14 +609,14 @@ public class Cs2rtv : BasePlugin
             if (totalvotes == 0)
             {
                 nextmap = mapnominatelist[random.Next(0, mapnominatelist.Count - 1)];
-                Server.PrintToChatAll($"地图投票已结束");
+                Server.PrintToChatAll("地图投票已结束");
                 rtvwin = true;
             }
             else if (votes.Select(x => x.Value).Max() > (totalvotes * 0.5f))
             {
                 votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
                 nextmap = votes.First().Key;
-                Server.PrintToChatAll($"地图投票已结束");
+                Server.PrintToChatAll("地图投票已结束");
                 rtvwin = true;
             }
             else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && votemaplist.Count >= 4 && totalvotes > 2)
@@ -646,7 +646,7 @@ public class Cs2rtv : BasePlugin
                 nextmap = votes.First().Key;
                 if(votes.ContainsKey(Server.MapName) && votes.First().Value <= (votes.GetValueOrDefault(Server.MapName)+1))
                     nextmap = Server.MapName;
-                Server.PrintToChatAll($"地图投票已结束");
+                Server.PrintToChatAll("地图投票已结束");
                 rtvwin = true;
             }
             VoteEnd(nextmap);
