@@ -252,7 +252,7 @@ public class Cs2rtv : BasePlugin
                         player.PrintToChat("地图投票即将开始");
                     }
                     if(x == 10)
-                        StartRtv();
+                        Server.NextFrame(()=>StartRtv());
                 }, TimerFlags.REPEAT);
             }
             if (extcount.Count >= rtvrequired && playercount != 0)
@@ -356,7 +356,7 @@ public class Cs2rtv : BasePlugin
                     player.PrintToChat("地图投票即将开始");
                 }
                 if(x == 10)
-                    StartRtv();
+                    Server.NextFrame(()=>StartRtv());
             }, TimerFlags.REPEAT);
         }
     }
@@ -367,7 +367,7 @@ public class Cs2rtv : BasePlugin
     public void ForceExtCommand(CCSPlayerController? cCSPlayer,CommandInfo command)
     {
         timeleft+=30;
-        Server.PrintToChatAll($"管理员 {cCSPlayer} 已延长地图");
+        Server.PrintToChatAll($"管理员已延长地图");
     }
 
     [ConsoleCommand("css_ext")]
@@ -429,10 +429,10 @@ public class Cs2rtv : BasePlugin
             foreach (var player in IsPlayer())
             {
                 playClientSound(player, "Alert.WarmupTimeoutBeep");
-                player.PrintToChat($"管理员 {cCSPlayer} 已强制开始地图投票");
+                player.PrintToChat($"管理员已强制开始地图投票");
             }
             if(x == 10)
-                StartRtv();
+                Server.NextFrame(()=>StartRtv());
         }, TimerFlags.REPEAT);
     }
 
@@ -707,7 +707,7 @@ public class Cs2rtv : BasePlugin
                     player.PrintToChat("即将进行下一轮投票");
                 }
                 if(x == 10)
-                    StartRtv();
+                    Server.NextFrame(()=>StartRtv());
             }, TimerFlags.REPEAT);
         }
     }
@@ -772,7 +772,7 @@ public class Cs2rtv : BasePlugin
                             player.PrintToChat("当前地图时长还剩5分钟");
                         }
                         if(x == 10)
-                            StartRtv();
+                            Server.NextFrame(()=>StartRtv());
                     }, TimerFlags.REPEAT);
                 }
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
