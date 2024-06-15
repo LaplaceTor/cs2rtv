@@ -315,6 +315,13 @@ public class Cs2rtv : BasePlugin
             Server.PrintToConsole($"当前地图还剩余 {timeleft} 分钟");
     }
 
+    [ConsoleCommand("css_stopsound")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void StopSoundCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
+    {
+        playClientSound(cCSPlayer!,"StopSoundEvents.StopAllMusic");
+    }
+
     [ConsoleCommand("css_rtv")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void RtvCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
@@ -437,7 +444,7 @@ public class Cs2rtv : BasePlugin
     }
 
     [ConsoleCommand("css_nominate")]
-    [CommandHelper(minArgs: 1, usage: "[mapname]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(minArgs: 0, usage: "[mapname]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void NominateCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
     {
         if (isrtving)
@@ -498,12 +505,15 @@ public class Cs2rtv : BasePlugin
         else
         {
             command.ReplyToCommand($"打开控制台查看地图列表");
-            var x = 0;
-            while(maplist[x] != null)
-            {
-                AddTimer(0.1f,()=>cCSPlayer!.PrintToConsole($"{maplist[x]}"));
-                x++;
-            }
+            var x = maplist.Count;
+            var y = x /10;
+            var z = x - (y *10);
+            for(var a=0;a<y-1;a++)
+                for(var b=0;b<10;b++)
+                    cCSPlayer!.PrintToConsole($"{maplist[a*10+b]}");
+            if(z >0)
+                for(var c = 0;c<z-1;c++)
+                    cCSPlayer!.PrintToConsole($"{maplist[y*10+c]}");
         }
 
     }
@@ -537,7 +547,7 @@ public class Cs2rtv : BasePlugin
         var music = rtvmusiclist[random.Next(0, rtvmusiclist.Count - 1)];
         foreach (var player in IsPlayer())
         {
-            playClientSound(player, "UI.Guardian.TooFarWarning", 0.5f, 1f);
+            // playClientSound(player, "UI.Guardian.TooFarWarning", 0.5f, 1f);
             AddTimer(5f, () => playClientSound(player, music, 0.5f, 1f));
         }
         if (!isrtvagain)
@@ -631,9 +641,10 @@ public class Cs2rtv : BasePlugin
                 var x = 0;
                 while (x < (y * 0.5f))
                 {
-                    if (votes.ElementAt(x).Key != null)
+                    if (votes.First().Key != null)
                     {
-                        votemaplist!.Add(votes.ElementAt(x).Key);
+                        votemaplist!.Add(votes.First().Key);
+                        votes.Remove(votes.First().Key);
                         x++;
                     }
                     else
@@ -812,18 +823,19 @@ public class Cs2rtv : BasePlugin
         Server.NextFrame(()=>
         {
             var music = mapendmusiclist[random.Next(0, mapendmusiclist.Count - 1)];
-            foreach (var player in IsPlayer())
+            var second = 10;
+            _repeattimer = AddTimer(1.0f, () =>
             {
-                playClientSound(player, music);
-                var second = 10;
-                _repeattimer = AddTimer(1.0f, () =>
+                foreach (var player in IsPlayer())
                 {
-                    player.PrintToCenterHtml($"距离换图还有{second}秒");
-                    second--;
-                    if (second == 0 && _repeattimer != null)
-                        Server.NextFrame(() => _repeattimer.Kill());
-                }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
-            }
+                    playClientSound(player, music);
+                    player.PrintToChat($"距离换图还有{second}秒");
+                    if (second == 0) 
+                        if(_repeattimer != null)
+                            Server.NextFrame(() => _repeattimer.Kill());
+                }
+                second--;
+            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
             var tryround = 0;
             _changemaprepeat = AddTimer(10f, () =>
             {
