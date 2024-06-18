@@ -628,54 +628,57 @@ public class Cs2rtv : BasePlugin
         foreach (var player in IsPlayer())
             MenuManager.OpenChatMenu(player, votemenu);
 
-        _rtvtimer = AddTimer(30f, () =>
+        Server.NextFrame(()=>
         {
-            if (!isrtving) return;
-            if (totalvotes == 0)
+            _rtvtimer = AddTimer(30f, () =>
             {
-                nextmap = mapnominatelist[random.Next(0, mapnominatelist.Count - 1)];
-                Server.PrintToChatAll("地图投票已结束");
-                rtvwin = true;
-            }
-            else if (votes.Select(x => x.Value).Max() > (totalvotes * 0.5f))
-            {
-                votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
-                nextmap = votes.First().Key;
-                Server.PrintToChatAll("地图投票已结束");
-                rtvwin = true;
-            }
-            else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && votemaplist.Count >= 4 && totalvotes > 2)
-            {
-                Server.PrintToChatAll("本轮投票未有地图投票比例超过50%，将进行下一轮投票");
-                votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
-                var y = votemaplist.Count();
-                votemaplist.Clear();
-                var x = 0;
-                while (x < (y * 0.5f))
+                if (!isrtving) return;
+                if (totalvotes == 0)
                 {
-                    if (votes.ElementAt(x).Key != null)
+                    nextmap = mapnominatelist[random.Next(0, mapnominatelist.Count - 1)];
+                    Server.PrintToChatAll("地图投票已结束");
+                    rtvwin = true;
+                }
+                else if (votes.Select(x => x.Value).Max() > (totalvotes * 0.5f))
+                {
+                    votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
+                    nextmap = votes.First().Key;
+                    Server.PrintToChatAll("地图投票已结束");
+                    rtvwin = true;
+                }
+                else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && votemaplist.Count >= 4 && totalvotes > 2)
+                {
+                    Server.PrintToChatAll("本轮投票未有地图投票比例超过50%，将进行下一轮投票");
+                    votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
+                    var y = votemaplist.Count();
+                    votemaplist.Clear();
+                    var x = 0;
+                    while (x < (y * 0.5f))
                     {
-                        if(votes.ElementAt(x).Value != 0) 
+                        if (votes.ElementAt(x).Key != null)
                         {
-                            votemaplist!.Add(votes.ElementAt(x).Key);
-                            x++;
-                        }else
+                            if(votes.ElementAt(x).Value != 0) 
+                            {
+                                votemaplist!.Add(votes.ElementAt(x).Key);
+                                x++;
+                            }else
+                                break;
+                        }
+                        else
                             break;
                     }
-                    else
-                        break;
                 }
-            }
-            else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && (votemaplist.Count < 4 || totalvotes <= 2))
-            {
-                votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
-                nextmap = votes.First().Key;
-                if(votes.ContainsKey(Server.MapName) && votes.First().Value <= (votes.GetValueOrDefault(Server.MapName)+1))
-                    nextmap = Server.MapName;
-                Server.PrintToChatAll("地图投票已结束");
-                rtvwin = true;
-            }
-            VoteEnd(nextmap);
+                else if (votes.Select(x => x.Value).Max() <= (totalvotes * 0.5f) && (votemaplist.Count < 4 || totalvotes <= 2))
+                {
+                    votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
+                    nextmap = votes.First().Key;
+                    if(votes.ContainsKey(Server.MapName) && votes.First().Value <= (votes.GetValueOrDefault(Server.MapName)+1))
+                        nextmap = Server.MapName;
+                    Server.PrintToChatAll("地图投票已结束");
+                    rtvwin = true;
+                }
+                VoteEnd(nextmap);
+            });
         });
     }
 
