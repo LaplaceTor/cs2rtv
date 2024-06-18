@@ -226,7 +226,7 @@ public class Cs2rtv : BasePlugin
                 canrtv = true;
                 firstmaprandom = true;
                 KillTimer();
-                timeleft = 30;
+                timeleft = 15;
                 StartMaptimer();
             });
         }
@@ -263,7 +263,7 @@ public class Cs2rtv : BasePlugin
             if (extcount.Count >= rtvrequired && playercount != 0)
             {
                 Server.PrintToChatAll("地图已延长");
-                timeleft += 30;
+                timeleft += 15;
                 extcount.Clear();
                 CanRtvtimer();
             }
@@ -303,7 +303,7 @@ public class Cs2rtv : BasePlugin
                 isrtving = false;
                 isrtvagain = false;
                 KillTimer();
-                timeleft = 30;
+                timeleft = 15;
                 extround = 0;
                 CanRtvtimer();
                 StartMaptimer();
@@ -383,7 +383,7 @@ public class Cs2rtv : BasePlugin
     [RequiresPermissions("@css/changemap")]
     public void ForceExtCommand(CCSPlayerController? cCSPlayer,CommandInfo command)
     {
-        timeleft+=30;
+        timeleft+=15;
         Server.PrintToChatAll("管理员已延长地图");
     }
 
@@ -421,7 +421,7 @@ public class Cs2rtv : BasePlugin
         {
             CanRtvtimer();
             Server.PrintToChatAll("地图已延长");
-            timeleft += 30;
+            timeleft += 15;
             extround++;
             extcount.Clear();
         }
@@ -702,7 +702,7 @@ public class Cs2rtv : BasePlugin
                 {
                     Server.PrintToChatAll("地图已延长");
                     Logger.LogInformation("地图已延长");
-                    timeleft = 30;
+                    timeleft = 15;
                 }
                 else
                 {
