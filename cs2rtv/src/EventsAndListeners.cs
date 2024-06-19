@@ -44,7 +44,7 @@ namespace cs2rtv
                 isrtvagain = false;
                 nextmappass = false;
                 KillTimer();
-                timeleft = 15;
+                timeleft = 30;
                 extround = 0;
                 CanRtvtimer();
                 StartMaptimer();
@@ -70,7 +70,6 @@ namespace cs2rtv
                     x++;
                     if (x >= 10)
                     {
-                        if (!isrtv)
                             Server.NextFrame(() => StartRtv());
                     }else
                     {
@@ -85,7 +84,7 @@ namespace cs2rtv
             if (extcount.Count >= rtvrequired && playercount != 0)
             {
                 Server.PrintToChatAll("地图已延长");
-                timeleft += 15;
+                timeleft += 30;
                 extcount.Clear();
                 CanRtvtimer();
             }

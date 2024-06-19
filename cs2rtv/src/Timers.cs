@@ -41,7 +41,6 @@ namespace cs2rtv
                     x++;
                     if (x >= 10)
                     {
-                        if (!isrtv)
                             Server.NextFrame(() => StartRtv());
                     }else
                     {

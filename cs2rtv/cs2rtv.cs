@@ -60,7 +60,7 @@ namespace cs2rtv
                     nextmappass = false;
                     firstmaprandom = true;
                     KillTimer();
-                    timeleft = 15;
+                    timeleft = 30;
                     StartMaptimer();
                 });
             }

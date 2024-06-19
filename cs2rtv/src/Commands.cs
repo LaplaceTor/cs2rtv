@@ -66,8 +66,7 @@ namespace cs2rtv
                     x++;
                     if (x >= 10)
                     {
-                        if (!isrtv)
-                            Server.NextFrame(() => StartRtv());
+                        Server.NextFrame(() => StartRtv());
                     }else
                     {
                         foreach (var player in IsPlayer())
@@ -86,7 +85,7 @@ namespace cs2rtv
         [RequiresPermissions("@css/changemap")]
         public void ForceExtCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
         {
-            timeleft += 15;
+            timeleft += 30;
             Server.PrintToChatAll("管理员已延长地图");
         }
 
@@ -129,7 +128,7 @@ namespace cs2rtv
             else
             {
                 Server.PrintToChatAll("地图已延长");
-                timeleft += 15;
+                timeleft += 30;
                 extround++;
                 extcount.Clear();
             }
@@ -153,7 +152,6 @@ namespace cs2rtv
                 x++;
                 if (x >= 10)
                 {
-                    if (!isrtv)
                         Server.NextFrame(() => StartRtv());
                 }else
                 {
