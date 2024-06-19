@@ -248,16 +248,15 @@ public class Cs2rtv : BasePlugin
                     x++;
                     if(x >= 10)
                     {
-                        if(!isrtv)
                             Server.NextFrame(()=>StartRtv());
-                        return;
-                    }
-                    foreach (var player in IsPlayer())
+                    }else
                     {
-                        playClientSound(player, "Alert.WarmupTimeoutBeep");
-                        player.PrintToChat("地图投票即将开始");
+                        foreach (var player in IsPlayer())
+                        {
+                            playClientSound(player, "Alert.WarmupTimeoutBeep");
+                            player.PrintToChat("地图投票即将开始");
+                        }
                     }
-                    
                 }, TimerFlags.REPEAT);
             }
             if (extcount.Count >= rtvrequired && playercount != 0)
@@ -364,16 +363,15 @@ public class Cs2rtv : BasePlugin
                 x++;
                 if(x >= 10)
                 {
-                    if(!isrtv)
                         Server.NextFrame(()=>StartRtv());
-                    return;
-                }
-                foreach (var player in IsPlayer())
+                }else
                 {
-                    playClientSound(player, "Alert.WarmupTimeoutBeep");
-                    player.PrintToChat("地图投票即将开始");
+                    foreach (var player in IsPlayer())
+                    {
+                        playClientSound(player, "Alert.WarmupTimeoutBeep");
+                        player.PrintToChat("地图投票即将开始");
+                    }
                 }
-                
             }, TimerFlags.REPEAT);
         }
     }
@@ -445,16 +443,15 @@ public class Cs2rtv : BasePlugin
             x++;
             if(x >= 10)
             {
-                if(!isrtv)
                     Server.NextFrame(()=>StartRtv());
-                return;
-            }
-            foreach (var player in IsPlayer())
+            }else
             {
-                playClientSound(player, "Alert.WarmupTimeoutBeep");
-                player.PrintToChat("管理员已强制开始地图投票");
-            }
-            
+                foreach (var player in IsPlayer())
+                {
+                    playClientSound(player, "Alert.WarmupTimeoutBeep");
+                    player.PrintToChat("管理员已强制开始地图投票");
+                }
+            }     
         }, TimerFlags.REPEAT);
     }
 
@@ -732,16 +729,15 @@ public class Cs2rtv : BasePlugin
                 x++;
                 if(x >= 10)
                 {
-                    if(!isrtv)
                         Server.NextFrame(()=>StartRtv());
-                    return;
-                }
-                foreach (var player in IsPlayer())
+                }else
                 {
-                    playClientSound(player, "Alert.WarmupTimeoutBeep");
-                    player.PrintToChat("即将进行下一轮投票");
+                    foreach (var player in IsPlayer())
+                    {
+                        playClientSound(player, "Alert.WarmupTimeoutBeep");
+                        player.PrintToChat("即将进行下一轮投票");
+                    }
                 }
-                
             }, TimerFlags.REPEAT);
         }
     }
@@ -802,16 +798,15 @@ public class Cs2rtv : BasePlugin
                         x++;
                         if(x >= 10)
                         {
-                            if(!isrtv)
                                 Server.NextFrame(()=>StartRtv());
-                            return;
-                        }
-                        foreach (var player in IsPlayer())
+                        }else
                         {
-                            playClientSound(player, "Alert.WarmupTimeoutBeep");
-                            player.PrintToChat("当前地图时长还剩5分钟");
+                            foreach (var player in IsPlayer())
+                            {
+                                playClientSound(player, "Alert.WarmupTimeoutBeep");
+                                player.PrintToChat("当前地图时长还剩5分钟");
+                            }
                         }
-                        
                     }, TimerFlags.REPEAT);
                 }
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
@@ -832,7 +827,6 @@ public class Cs2rtv : BasePlugin
                         if (_endmaptimer != null)
                             _endmaptimer.Kill();
                     });
-                    return;
                 }
                 else if (timeleft == 1)
                     Server.PrintToChatAll("距离换图还有60秒");
@@ -854,14 +848,15 @@ public class Cs2rtv : BasePlugin
                 {
                     if(_repeattimer != null)
                         Server.NextFrame(() => _repeattimer.Kill());
-                    return;
-                }
-                foreach (var player in IsPlayer())
+                }else
                 {
-                    playClientSound(player, music);
-                    player.PrintToChat($"距离换图还有{second}秒");
+                    foreach (var player in IsPlayer())
+                    {
+                        playClientSound(player, music);
+                        player.PrintToChat($"距离换图还有{second}秒");
+                    }
+                    second--;
                 }
-                second--;
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
             var tryround = 0;
             _changemaprepeat = AddTimer(10f, () =>
