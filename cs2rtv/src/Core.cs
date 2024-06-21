@@ -147,7 +147,7 @@ namespace cs2rtv
                     {
                         votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
                         nextmap = votes.First().Key;
-                        if (votes.ContainsKey(Server.MapName) && votes.First().Value <= (votes.GetValueOrDefault(Server.MapName) + 1))
+                        if (votes.ContainsKey(Server.MapName) && votes.GetValueOrDefault(Server.MapName) != 0 && votes.First().Value <= (votes.GetValueOrDefault(Server.MapName) + 1))
                             nextmap = Server.MapName;
                         Server.PrintToChatAll("地图投票已结束");
                         rtvwin = true;
