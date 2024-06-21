@@ -177,7 +177,7 @@ namespace cs2rtv
                     {
                         Server.PrintToChatAll("地图已延长");
                         Logger.LogInformation("地图已延长");
-                        timeleft = 15;
+                        timeleft = 30;
                     }
                     else
                     {
@@ -187,7 +187,7 @@ namespace cs2rtv
                     }
                     CanRtvtimer();
                     if(!nextmappass)                        
-                        StartMaptimer();
+                         StartMaptimer();
                     else
                         EndMaptimer(nextmapname);
                 }

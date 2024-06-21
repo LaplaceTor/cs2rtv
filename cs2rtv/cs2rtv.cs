@@ -62,7 +62,7 @@ namespace cs2rtv
                     nextmappass = false;
                     firstmaprandom = true;
                     KillTimer();
-                    timeleft = 15;
+                    timeleft = 30;
                     StartMaptimer();
                 });
             }
@@ -102,7 +102,7 @@ namespace cs2rtv
                         isrtvagain = false;
                         nextmappass = false;
                         KillTimer();
-                        timeleft = 15;
+                        timeleft = 30;
                         extround = 0;
                         CanRtvtimer();
                         StartMaptimer();

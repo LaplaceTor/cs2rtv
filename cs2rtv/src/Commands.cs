@@ -85,7 +85,7 @@ namespace cs2rtv
         [RequiresPermissions("@css/changemap")]
         public void ForceExtCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
         {
-            timeleft += 15;
+            timeleft += 30;
             Server.PrintToChatAll("管理员已延长地图");
         }
 
@@ -128,7 +128,7 @@ namespace cs2rtv
             else
             {
                 Server.PrintToChatAll("地图已延长");
-                timeleft += 15;
+                timeleft += 30;
                 extround++;
                 extcount.Clear();
             }
@@ -195,34 +195,34 @@ namespace cs2rtv
 
             if (maplist.Contains(mapname) && mapname.Length > 2)
             {
-                mapname = maplist.Find(x => Regex.IsMatch(mapname, x) && Regex.IsMatch(x, mapname));
-                if (mapname == null)
+                var findmapname = maplist.Find(x => Regex.IsMatch(mapname, x) && Regex.IsMatch(x, mapname));
+                if (findmapname == null)
                 {
-                    List<string> findmapcache = maplist.Where(x => x.Contains(mapname!)).ToList();
+                    List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
                     var randommap = findmapcache.FirstOrDefault();
                     command.ReplyToCommand($"你是否在寻找 {randommap}");
                     return;
                 }
                 else
                 {
-                    if (mapnominatelist.Find(x => Regex.IsMatch(mapname, x) && Regex.IsMatch(x, mapname)) != null)
+                    if (mapnominatelist.Find(x => Regex.IsMatch(findmapname, x) && Regex.IsMatch(x, findmapname)) != null)
                     {
-                        command.ReplyToCommand($"地图 {mapname} 已被他人预定");
+                        command.ReplyToCommand($"地图 {findmapname} 已被他人预定");
                         return;
                     }
-                    else if (mapname == Server.MapName)
+                    else if (findmapname == Server.MapName)
                     {
-                        command.ReplyToCommand($"地图 {mapname} 为当前地图");
+                        command.ReplyToCommand($"地图 {findmapname} 为当前地图");
                         return;
                     }
-                    else if (mapcooldown.Find(x => Regex.IsMatch(mapname, x) && Regex.IsMatch(x, mapname)) != null)
+                    else if (mapcooldown.Find(x => Regex.IsMatch(findmapname, x) && Regex.IsMatch(x, findmapname)) != null)
                     {
-                        command.ReplyToCommand($"地图 {mapname} 最近已经游玩过了");
+                        command.ReplyToCommand($"地图 {findmapname} 最近已经游玩过了");
                         return;
                     }
                 }
-                mapnominatelist.Add(mapname);
-                Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {mapname}");
+                mapnominatelist.Add(findmapname);
+                Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {findmapname}");
             }
             else
             {
