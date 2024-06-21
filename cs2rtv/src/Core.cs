@@ -21,7 +21,7 @@ namespace cs2rtv
                 int index = random.Next(0, maplist.Count - 1);
                 while (!rtvwin)
                 {
-                    if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null)
+                    if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x) && Regex.IsMatch(x, maplist[index])) != null)
                         continue;
                     else
                     {
@@ -46,7 +46,7 @@ namespace cs2rtv
                 while (votemaplist.Count < 6)
                 {
                     int index = random.Next(0, maplist.Count - 1);
-                    if (votemaplist.Find(x => Regex.IsMatch(maplist[index], x)) != null || mapcooldown.Find(x => Regex.IsMatch(maplist[index], x)) != null) continue;
+                    if (votemaplist.Find(x => Regex.IsMatch(maplist[index], x) && Regex.IsMatch(x, maplist[index])) != null || mapcooldown.Find(x => Regex.IsMatch(maplist[index], x) && Regex.IsMatch(x, maplist[index])) != null) continue;
                     votemaplist.Add(maplist[index]);
                 }
             }
@@ -177,7 +177,7 @@ namespace cs2rtv
                     {
                         Server.PrintToChatAll("地图已延长");
                         Logger.LogInformation("地图已延长");
-                        timeleft = 30;
+                        timeleft = 15;
                     }
                     else
                     {

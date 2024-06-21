@@ -2,6 +2,8 @@
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Logging;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
+using System.Text.RegularExpressions;
+
 
 namespace cs2rtv
 {
@@ -60,12 +62,52 @@ namespace cs2rtv
                     nextmappass = false;
                     firstmaprandom = true;
                     KillTimer();
-                    timeleft = 30;
+                    timeleft = 15;
                     StartMaptimer();
                 });
             }
 
-            RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
+            RegisterListener<Listeners.OnMapStart>((OnMapStartHandler)=>
+            {
+                    if (!firstmaprandom)
+                    {
+                        if (!Regex.IsMatch(Server.MapName, @$"\bde_"))
+                        {
+                            Server.NextFrame(() =>
+                            {
+                                firstmaprandom = true;
+                                Random random = new();
+                                int index = random.Next(0, maplist.Count - 1);
+                                var randommap = maplist[index];
+                                if (randommap == Server.MapName)
+                                    return;
+                                Server.ExecuteCommand($"ds_workshop_changelevel {randommap}");
+                            });
+                            return;
+                        }
+                    }
+
+                    Server.NextFrame(() =>
+                    {
+                        mapcooldown.Add(Server.MapName);
+                        if (mapcooldown.Count > 5)
+                            mapcooldown.Remove(mapcooldown.First());
+                        rtvwin = false;
+                        rtvcount.Clear();
+                        extcount.Clear();
+                        mapnominatelist.Clear();
+                        votemaplist.Clear();
+                        isrtv = false;
+                        isrtving = false;
+                        isrtvagain = false;
+                        nextmappass = false;
+                        KillTimer();
+                        timeleft = 15;
+                        extround = 0;
+                        CanRtvtimer();
+                        StartMaptimer();
+                    });
+            });
         }
     }
 }

@@ -88,6 +88,8 @@ namespace cs2rtv
         private void ChangeMapRepeat(string mapname)
         {
             var music = mapendmusiclist[random.Next(0, mapendmusiclist.Count - 1)];
+            foreach (var player in IsPlayer())
+                    PlayClientSound(player, music);
             var second = 10;
             _repeattimer = AddTimer(1.0f, () =>
             {
@@ -98,10 +100,7 @@ namespace cs2rtv
                     return;
                 }
                 foreach (var player in IsPlayer())
-                {
-                    PlayClientSound(player, music);
                     player.PrintToChat($"距离换图还有{second}秒");
-                }
                 second--;
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
             var tryround = 0;

@@ -1,5 +1,5 @@
 
-using System.Text.RegularExpressions;
+// using System.Text.RegularExpressions;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -9,47 +9,47 @@ namespace cs2rtv
 {
     public partial class Cs2rtv
     {
-        public void OnMapStartHandler(string mapName)
-        {
-            if (!firstmaprandom)
-            {
-                if (!Regex.IsMatch(Server.MapName, @$"\bde_"))
-                {
-                    Server.NextFrame(() =>
-                    {
-                        firstmaprandom = true;
-                        Random random = new();
-                        int index = random.Next(0, maplist.Count - 1);
-                        var randommap = maplist[index];
-                        if (randommap == Server.MapName)
-                            return;
-                        Server.ExecuteCommand($"ds_workshop_changelevel {randommap}");
-                    });
-                    return;
-                }
-            }
+        // public void OnMapStartHandler(string mapName)
+        // {
+        //     if (!firstmaprandom)
+        //     {
+        //         if (!Regex.IsMatch(Server.MapName, @$"\bde_"))
+        //         {
+        //             Server.NextFrame(() =>
+        //             {
+        //                 firstmaprandom = true;
+        //                 Random random = new();
+        //                 int index = random.Next(0, maplist.Count - 1);
+        //                 var randommap = maplist[index];
+        //                 if (randommap == Server.MapName)
+        //                     return;
+        //                 Server.ExecuteCommand($"ds_workshop_changelevel {randommap}");
+        //             });
+        //             return;
+        //         }
+        //     }
 
-            Server.NextFrame(() =>
-            {
-                mapcooldown.Add(Server.MapName);
-                if (mapcooldown.Count > 5)
-                    mapcooldown.Remove(mapcooldown.First());
-                rtvwin = false;
-                rtvcount.Clear();
-                extcount.Clear();
-                mapnominatelist.Clear();
-                votemaplist.Clear();
-                isrtv = false;
-                isrtving = false;
-                isrtvagain = false;
-                nextmappass = false;
-                KillTimer();
-                timeleft = 30;
-                extround = 0;
-                CanRtvtimer();
-                StartMaptimer();
-            });
-        }
+        //     Server.NextFrame(() =>
+        //     {
+        //         mapcooldown.Add(Server.MapName);
+        //         if (mapcooldown.Count > 5)
+        //             mapcooldown.Remove(mapcooldown.First());
+        //         rtvwin = false;
+        //         rtvcount.Clear();
+        //         extcount.Clear();
+        //         mapnominatelist.Clear();
+        //         votemaplist.Clear();
+        //         isrtv = false;
+        //         isrtving = false;
+        //         isrtvagain = false;
+        //         nextmappass = false;
+        //         KillTimer();
+        //         timeleft = 15;
+        //         extround = 0;
+        //         CanRtvtimer();
+        //         StartMaptimer();
+        //     });
+        // }
 
         [GameEventHandler]
         public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
@@ -84,7 +84,7 @@ namespace cs2rtv
             if (extcount.Count >= rtvrequired && playercount != 0)
             {
                 Server.PrintToChatAll("地图已延长");
-                timeleft += 30;
+                timeleft += 15;
                 extcount.Clear();
                 CanRtvtimer();
             }
