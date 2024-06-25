@@ -64,22 +64,23 @@ namespace cs2rtv
                 isrtving = true;
                 isrtv = true;
                 rtvcount.Clear();
-                var x = 0;
-                _repeattimer = AddTimer(1f, () =>
-                {
-                    x++;
-                    if (x >= 10)
-                    {
-                            Server.NextFrame(() => StartRtv());
-                    }else
-                    {
-                        foreach (var player in IsPlayer())
-                        {
-                            PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                            player.PrintToChat("地图投票即将开始");
-                        }
-                    }
-                }, TimerFlags.REPEAT);
+                // var x = 0;
+                // _repeattimer = AddTimer(1f, () =>
+                // {
+                //     x++;
+                //     if (x >= 10)
+                //     {
+                //             Server.NextFrame(() => StartRtv());
+                //     }else
+                //     {
+                //         foreach (var player in IsPlayer())
+                //         {
+                //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
+                //             player.PrintToChat("地图投票即将开始");
+                //         }
+                //     }
+                // }, TimerFlags.REPEAT);
+                RepeatBroadcast(10,1f,"地图投票即将开始");
             }
             if (extcount.Count >= rtvrequired && playercount != 0)
             {

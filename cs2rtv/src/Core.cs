@@ -21,7 +21,7 @@ namespace cs2rtv
                 int index = random.Next(0, maplist.Count - 1);
                 while (!rtvwin)
                 {
-                    if (mapcooldown.Find(x => Regex.IsMatch(maplist[index], x) && Regex.IsMatch(x, maplist[index])) != null)
+                    if (mapcooldown.Find(x => x == maplist[index]) != null)
                         continue;
                     else
                     {
@@ -46,7 +46,7 @@ namespace cs2rtv
                 while (votemaplist.Count < 6)
                 {
                     int index = random.Next(0, maplist.Count - 1);
-                    if (votemaplist.Find(x => Regex.IsMatch(maplist[index], x) && Regex.IsMatch(x, maplist[index])) != null || mapcooldown.Find(x => Regex.IsMatch(maplist[index], x) && Regex.IsMatch(x, maplist[index])) != null) continue;
+                    if (votemaplist.Find(x => x == maplist[index]) != null || mapcooldown.Find(x => x == maplist[index]) != null) continue;
                     votemaplist.Add(maplist[index]);
                 }
             }
@@ -199,7 +199,10 @@ namespace cs2rtv
                     nextmapname = mapname;
                     CanRtvtimer();
                     if (!isrtv)
+                    {
+                        timeleft = 5;
                         EndMaptimer(mapname);
+                    }
                     else
                         ChangeMapRepeat(mapname);
                 }
@@ -207,22 +210,23 @@ namespace cs2rtv
             else
             {
                 isrtvagain = true;
-                var x = 0;
-                _repeattimer = AddTimer(1f, () =>
-                {
-                    x++;
-                    if (x >= 10)
-                    {
-                            Server.NextFrame(() => StartRtv());
-                    }else
-                    {
-                        foreach (var player in IsPlayer())
-                        {
-                            PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                            player.PrintToChat("即将进行下一轮投票");
-                        }
-                    }
-                }, TimerFlags.REPEAT);
+                // var x = 0;
+                // _repeattimer = AddTimer(1f, () =>
+                // {
+                //     x++;
+                //     if (x >= 10)
+                //     {
+                //             Server.NextFrame(() => StartRtv());
+                //     }else
+                //     {
+                //         foreach (var player in IsPlayer())
+                //         {
+                //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
+                //             player.PrintToChat("即将进行下一轮投票");
+                //         }
+                //     }
+                // }, TimerFlags.REPEAT);
+                RepeatBroadcast(10,1f,"即将进行下一轮投票");
             }
         }
     }

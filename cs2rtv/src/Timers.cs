@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 
 namespace cs2rtv
@@ -35,22 +37,23 @@ namespace cs2rtv
             if (timeleft <= 0)
             {
                 isrtving = true;
-                var x = 0;
-                _repeattimer = AddTimer(1f, () =>
-                {
-                    x++;
-                    if (x >= 10)
-                    {
-                            Server.NextFrame(() => StartRtv());
-                    }else
-                    {
-                        foreach (var player in IsPlayer())
-                        {
-                            PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                            player.PrintToChat("当前地图时长还剩5分钟");
-                        }
-                    }
-                }, TimerFlags.REPEAT);
+                // var x = 0;
+                // _repeattimer = AddTimer(1f, () =>
+                // {
+                //     x++;
+                //     if (x >= 10)
+                //     {
+                //             Server.NextFrame(() => StartRtv());
+                //     }else
+                //     {
+                //         foreach (var player in IsPlayer())
+                //         {
+                //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
+                //             player.PrintToChat("当前地图时长还剩5分钟");
+                //         }
+                //     }
+                // }, TimerFlags.REPEAT);
+                RepeatBroadcast(10,1f,"当前地图时长还剩5分钟");
             }
             else
             {
@@ -60,23 +63,16 @@ namespace cs2rtv
 
         private void EndMaptimer(string mapname)
         {
-            timeleft = 5;
             _endmaptimer = AddTimer(60f, () =>
             {
                 timeleft--;
                 if (timeleft <= 0)
-                {
                     ChangeMapRepeat(mapname);
-                    Server.NextFrame(() =>
-                    {
-                        if (_endmaptimer != null)
-                            _endmaptimer.Kill();
-                    });
-                    return;
-                }
                 else if (timeleft == 1)
                     Server.PrintToChatAll("距离换图还有60秒");
-            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+                else
+                    EndMaptimer(mapname);
+            });
         }
 
         private void CanRtvtimer()
@@ -114,6 +110,25 @@ namespace cs2rtv
                     Server.ExecuteCommand($"ds_workshop_changelevel {randommap}");
                 }
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
+        private void RepeatBroadcast(int repeatround, float eachrepeattime, string chatmessage)
+        {
+            _repeattimer = AddTimer(eachrepeattime, ()=>
+            {
+                if(repeatround <= 0)
+                    Server.NextFrame(() => StartRtv());
+                else
+                {
+                    foreach (var player in IsPlayer())
+                    {
+                        PlayClientSound(player, "Alert.WarmupTimeoutBeep");
+                        player.PrintToChat(chatmessage);
+                    }
+                    repeatround--;
+                    RepeatBroadcast(repeatround, eachrepeattime, chatmessage);
+                }
+            });
         }
     }
 }

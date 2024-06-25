@@ -60,23 +60,24 @@ namespace cs2rtv
                 isrtving = true;
                 isrtv = true;
                 rtvcount.Clear();
-                var x = 0;
-                _repeattimer = AddTimer(1f, () =>
-                {
-                    x++;
-                    if (x >= 10)
-                    {
-                        Server.NextFrame(() => StartRtv());
-                    }else
-                    {
-                        foreach (var player in IsPlayer())
-                        {
-                            PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                            player.PrintToChat("地图投票即将开始");
-                        }
-                    }
+                // var x = 0;
+                // _repeattimer = AddTimer(1f, () =>
+                // {
+                //     x++;
+                //     if (x >= 10)
+                //     {
+                //         Server.NextFrame(() => StartRtv());
+                //     }else
+                //     {
+                //         foreach (var player in IsPlayer())
+                //         {
+                //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
+                //             player.PrintToChat("地图投票即将开始");
+                //         }
+                //     }
 
-                }, TimerFlags.REPEAT);
+                // }, TimerFlags.REPEAT);
+                RepeatBroadcast(10,1f,"地图投票即将开始");
             }
         }
 
@@ -146,22 +147,23 @@ namespace cs2rtv
             }
             isrtving = true;
             isrtv = true;
-            var x = 0;
-            _repeattimer = AddTimer(1f, () =>
-            {
-                x++;
-                if (x >= 10)
-                {
-                        Server.NextFrame(() => StartRtv());
-                }else
-                {
-                    foreach (var player in IsPlayer())
-                    {
-                        PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                        player.PrintToChat("管理员已强制开始地图投票");
-                    }
-                }
-            }, TimerFlags.REPEAT);
+            // var x = 0;
+            // _repeattimer = AddTimer(1f, () =>
+            // {
+            //     x++;
+            //     if (x >= 10)
+            //     {
+            //             Server.NextFrame(() => StartRtv());
+            //     }else
+            //     {
+            //         foreach (var player in IsPlayer())
+            //         {
+            //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
+            //             player.PrintToChat("管理员已强制开始地图投票");
+            //         }
+            //     }
+            // }, TimerFlags.REPEAT);
+            RepeatBroadcast(10,1f,"管理员已强制开始地图投票");
         }
 
         [ConsoleCommand("css_nominate")]
@@ -195,38 +197,37 @@ namespace cs2rtv
 
             if (maplist.Contains(mapname) && mapname.Length > 2)
             {
-                var findmapname = maplist.Find(x => Regex.IsMatch(mapname, x) && Regex.IsMatch(x, mapname));
-                if (findmapname == null)
+                var findmapname = "";
+                List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
+                if(findmapcache.Count == 1)
+                    findmapname = mapname;
+                else
                 {
-                    List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
                     var randommap = findmapcache.FirstOrDefault();
                     command.ReplyToCommand($"你是否在寻找 {randommap}");
                     return;
                 }
-                else
+                if (mapnominatelist.Find(x=> x == findmapname) != null)
                 {
-                    if (mapnominatelist.Find(x => Regex.IsMatch(findmapname, x) && Regex.IsMatch(x, findmapname)) != null)
-                    {
-                        command.ReplyToCommand($"地图 {findmapname} 已被他人预定");
-                        return;
-                    }
-                    else if (findmapname == Server.MapName)
-                    {
-                        command.ReplyToCommand($"地图 {findmapname} 为当前地图");
-                        return;
-                    }
-                    else if (mapcooldown.Find(x => Regex.IsMatch(findmapname, x) && Regex.IsMatch(x, findmapname)) != null)
-                    {
-                        command.ReplyToCommand($"地图 {findmapname} 最近已经游玩过了");
-                        return;
-                    }
+                    command.ReplyToCommand($"地图 {findmapname} 已被他人预定");
+                    return;
+                }
+                else if (findmapname == Server.MapName)
+                {
+                    command.ReplyToCommand($"地图 {findmapname} 为当前地图");
+                    return;
+                }
+                else if (mapcooldown.Find(x=> x == findmapname) != null)
+                {
+                    command.ReplyToCommand($"地图 {findmapname} 最近已经游玩过了");
+                    return;
                 }
                 mapnominatelist.Add(findmapname);
                 Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {findmapname}");
             }
             else
             {
-                command.ReplyToCommand($"打开控制台查看地图列表");
+                command.ReplyToCommand($"未找到地图{mapname}, 打开控制台查看地图列表");
                 for(var x = 0; x<maplist.Count -1; x++)
                     cCSPlayer!.PrintToConsole($"{maplist[x]}");
             }
