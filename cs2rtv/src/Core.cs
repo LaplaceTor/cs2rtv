@@ -67,6 +67,7 @@ namespace cs2rtv
                         totalvotes += 1;
                         player.PrintToChat("你已投票给不更换地图");
                         Logger.LogInformation("{PlayerName} 投票给不换图", player.PlayerName);
+                        MenuManager.CloseActiveMenu(player);
                         GetPlayersCount();
                         if (votes[mapname] >= rtvrequired)
                         {
@@ -86,6 +87,7 @@ namespace cs2rtv
                         totalvotes += 1;
                         player.PrintToChat($"你已投票给地图 {mapname}");
                         Logger.LogInformation("{PlayerName} 投票给地图 {mapname}", player.PlayerName, mapname);
+                        MenuManager.CloseActiveMenu(player);
                         GetPlayersCount();
                         if (votes[mapname] >= rtvrequired)
                         {
