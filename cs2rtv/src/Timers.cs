@@ -68,7 +68,7 @@ namespace cs2rtv
                 timeleft--;
                 if (timeleft <= 0)
                     ChangeMapRepeat(mapname);
-                else if (timeleft == 1)
+                else if (timeleft < 2 && timeleft > 0)
                     Server.PrintToChatAll("距离换图还有60秒");
                 else
                     EndMaptimer(mapname);
