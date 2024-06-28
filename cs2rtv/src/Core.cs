@@ -161,7 +161,8 @@ namespace cs2rtv
 
         public void VoteEnd(string mapname)
         {
-
+            foreach(var player in IsPlayer())
+                MenuManager.CloseActiveMenu(player);
             if (rtvwin)
             {
                 rtvwin = false;
