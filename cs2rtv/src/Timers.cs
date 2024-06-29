@@ -63,16 +63,22 @@ namespace cs2rtv
 
         private void EndMaptimer(string mapname)
         {
-            _endmaptimer = AddTimer(60f, () =>
+            Server.NextFrame(() =>
             {
-                timeleft--;
-                if (timeleft <= 0)
-                    ChangeMapRepeat(mapname);
-                else if (timeleft < 2 && timeleft > 0)
-                    Server.PrintToChatAll("距离换图还有60秒");
-                else
-                    EndMaptimer(mapname);
+                _endmaptimer = AddTimer(60f, EndMaptimerHandler, TimerFlags.STOP_ON_MAPCHANGE);
             });
+        }
+
+        private void EndMaptimerHandler()
+        {
+            timeleft--;
+            if (timeleft <= 0)
+                ChangeMapRepeat(nextmapname);
+            else if (timeleft < 2 && timeleft > 0)
+                Server.PrintToChatAll("距离换图还有60秒");
+            else
+                _endmaptimer = AddTimer(60f, EndMaptimerHandler, TimerFlags.STOP_ON_MAPCHANGE);
+                
         }
 
         private void CanRtvtimer()
