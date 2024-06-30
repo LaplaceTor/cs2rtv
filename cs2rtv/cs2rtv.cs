@@ -33,7 +33,6 @@ namespace cs2rtv
         private Timer? _canrtvtimer;
         private Timer? _maptimer;
         private Timer? _rtvtimer;
-        private Timer? _endmaptimer;
         private Timer? _changemaprepeat;
         private Timer? _repeattimer;
         private readonly Random random = new();

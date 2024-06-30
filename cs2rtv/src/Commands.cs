@@ -131,6 +131,7 @@ namespace cs2rtv
                 Server.PrintToChatAll("地图已延长");
                 timeleft += 30;
                 extround++;
+                CanRtvtimer();
                 extcount.Clear();
             }
         }

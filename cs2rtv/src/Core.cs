@@ -190,13 +190,14 @@ namespace cs2rtv
                     }
                     CanRtvtimer();
                     if(!nextmappass)                        
-                         StartMaptimer();
+                        StartMaptimer();
                     else
-                        EndMaptimer(nextmapname);
+                        EndMaptimer();
                 }
                 else
                 {
                     mapnominatelist.Clear();
+                    Server.PrintToChatAll($"投票决定为 {mapname}");
                     Logger.LogInformation("投票决定为 {mapname}", mapname);
                     nextmappass = true;
                     nextmapname = mapname;
@@ -204,7 +205,7 @@ namespace cs2rtv
                     if (!isrtv)
                     {
                         timeleft = 5;
-                        EndMaptimer(mapname);
+                        EndMaptimer();
                     }
                     else
                         ChangeMapRepeat(mapname);
