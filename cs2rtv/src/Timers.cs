@@ -83,7 +83,7 @@ namespace cs2rtv
         private void CanRtvtimer()
         {
             canrtv = false;
-            Server.NextFrame(() => _canrtvtimer = AddTimer(5 * 60f, () => canrtv = true));
+            Server.NextFrame(() => _canrtvtimer = AddTimer(10 * 60f, () => canrtv = true));
         }
 
         private void ChangeMapRepeat(string mapname)
