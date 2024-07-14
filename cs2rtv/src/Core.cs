@@ -67,6 +67,7 @@ namespace cs2rtv
                         totalvotes += 1;
                         player.PrintToChat("你已投票给不更换地图");
                         Logger.LogInformation("{PlayerName} 投票给不换图", player.PlayerName);
+                        MenuManager.CloseActiveMenu(player);
                         GetPlayersCount();
                         if (votes[mapname] >= rtvrequired)
                         {
@@ -86,6 +87,7 @@ namespace cs2rtv
                         totalvotes += 1;
                         player.PrintToChat($"你已投票给地图 {mapname}");
                         Logger.LogInformation("{PlayerName} 投票给地图 {mapname}", player.PlayerName, mapname);
+                        MenuManager.CloseActiveMenu(player);
                         GetPlayersCount();
                         if (votes[mapname] >= rtvrequired)
                         {
@@ -159,7 +161,8 @@ namespace cs2rtv
 
         public void VoteEnd(string mapname)
         {
-
+            foreach(var player in IsPlayer())
+                MenuManager.CloseActiveMenu(player);
             if (rtvwin)
             {
                 rtvwin = false;
@@ -187,13 +190,14 @@ namespace cs2rtv
                     }
                     CanRtvtimer();
                     if(!nextmappass)                        
-                         StartMaptimer();
+                        StartMaptimer();
                     else
-                        EndMaptimer(nextmapname);
+                        EndMaptimer();
                 }
                 else
                 {
                     mapnominatelist.Clear();
+                    Server.PrintToChatAll($"投票决定为 {mapname}");
                     Logger.LogInformation("投票决定为 {mapname}", mapname);
                     nextmappass = true;
                     nextmapname = mapname;
@@ -201,7 +205,7 @@ namespace cs2rtv
                     if (!isrtv)
                     {
                         timeleft = 5;
-                        EndMaptimer(mapname);
+                        EndMaptimer();
                     }
                     else
                         ChangeMapRepeat(mapname);

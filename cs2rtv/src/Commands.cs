@@ -183,9 +183,10 @@ namespace cs2rtv
             string? mapname = command.GetArg(1);
 
             List<string> blocklist = new List<string>
-        {
-            "surf","surf_","bhop","bhop_","kz","kz_"
-        };
+            {
+                "surf","surf_","bhop","bhop_","kz","kz_"
+            };
+
             foreach (string bug in blocklist)
             {
                 if (Regex.IsMatch(mapname, @$"\b{bug}\b"))
@@ -195,7 +196,7 @@ namespace cs2rtv
                 }
             }
 
-            if (maplist.Contains(mapname) && mapname.Length > 2)
+            if (maplist.Contains(mapname))
             {
                 var findmapname = "";
                 List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
@@ -227,9 +228,15 @@ namespace cs2rtv
             }
             else
             {
-                command.ReplyToCommand($"未找到地图{mapname}, 打开控制台查看地图列表");
-                for(var x = 0; x<maplist.Count -1; x++)
-                    cCSPlayer!.PrintToConsole($"{maplist[x]}");
+                command.ReplyToCommand($"未找到地图{mapname}, 打开控制台查看部分地图");
+                var maplistcache = maplist;
+                for(var x = 0; x<50; x++)
+                {
+                    if(maplistcache.Count == 0) break;
+                    var z = random.Next(0,maplist.Count - 1);
+                    cCSPlayer!.PrintToConsole($"{maplistcache[z]}");
+                    maplist.Remove(maplistcache[z]);
+                }
             }
         }
     }

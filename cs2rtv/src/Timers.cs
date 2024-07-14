@@ -15,8 +15,6 @@ namespace cs2rtv
                 _maptimer.Kill();
             if (_rtvtimer != null)
                 _rtvtimer.Kill();
-            if (_endmaptimer != null)
-                _endmaptimer.Kill();
             if (_changemaprepeat != null)
                 _changemaprepeat.Kill();
             if (_repeattimer != null)
@@ -61,24 +59,31 @@ namespace cs2rtv
             }
         }
 
-        private void EndMaptimer(string mapname)
+        private void EndMaptimer()
         {
-            _endmaptimer = AddTimer(60f, () =>
+            Server.NextFrame(() =>
             {
-                timeleft--;
-                if (timeleft <= 0)
-                    ChangeMapRepeat(mapname);
-                else if (timeleft == 1)
-                    Server.PrintToChatAll("距离换图还有60秒");
-                else
-                    EndMaptimer(mapname);
+                _maptimer = AddTimer(60f, EndMaptimerHandler, TimerFlags.STOP_ON_MAPCHANGE);
             });
+        }
+
+        private void EndMaptimerHandler()
+        {
+            timeleft--;
+            if (timeleft <= 0)
+                ChangeMapRepeat(nextmapname);
+            else
+            {
+                if (timeleft < 2 && timeleft > 0)
+                    Server.PrintToChatAll("距离换图还有60秒");
+                _maptimer = AddTimer(60f, EndMaptimerHandler, TimerFlags.STOP_ON_MAPCHANGE);
+            }
         }
 
         private void CanRtvtimer()
         {
             canrtv = false;
-            Server.NextFrame(() => _canrtvtimer = AddTimer(5 * 60f, () => canrtv = true));
+            Server.NextFrame(() => _canrtvtimer = AddTimer(10 * 60f, () => canrtv = true));
         }
 
         private void ChangeMapRepeat(string mapname)
