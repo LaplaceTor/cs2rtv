@@ -98,6 +98,7 @@ namespace cs2rtv
                 {
                     if (_repeattimer != null)
                         Server.NextFrame(() => _repeattimer.Kill());
+                    return;
                 }
                 foreach (var player in IsPlayer())
                     player.PrintToChat($"距离换图还有{second}秒");
