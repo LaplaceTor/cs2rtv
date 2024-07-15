@@ -186,6 +186,7 @@ namespace cs2rtv
             {
                 "surf","surf_","bhop","bhop_","kz","kz_"
             };
+
             foreach (string bug in blocklist)
             {
                 if (Regex.IsMatch(mapname, @$"\b{bug}\b"))

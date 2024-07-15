@@ -98,6 +98,7 @@ namespace cs2rtv
                 {
                     if (_repeattimer != null)
                         Server.NextFrame(() => _repeattimer.Kill());
+                    return;
                 }
                 else
                 {
