@@ -99,9 +99,12 @@ namespace cs2rtv
                     if (_repeattimer != null)
                         Server.NextFrame(() => _repeattimer.Kill());
                 }
-                foreach (var player in IsPlayer())
-                    player.PrintToChat($"距离换图还有{second}秒");
-                second--;
+                else
+                {
+                    foreach (var player in IsPlayer())
+                        player.PrintToChat($"距离换图还有{second}秒");
+                    second--;
+                }
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
             var tryround = 0;
             _changemaprepeat = AddTimer(10f, () =>

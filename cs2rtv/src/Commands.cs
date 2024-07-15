@@ -195,7 +195,7 @@ namespace cs2rtv
                 }
             }
 
-            if (maplist.Contains(mapname))
+            if (maplist.Contains(mapname) && mapname.Length > 2)
             {
                 var findmapname = "";
                 List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
