@@ -30,6 +30,7 @@ namespace cs2rtv
 
         [ConsoleCommand("css_maplistreload")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+[RequiresPermissions("@css/changemap")]
         public void ReloadMaplistCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
         {
             maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
