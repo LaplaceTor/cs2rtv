@@ -6,7 +6,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Timers;
 
 namespace cs2rtv
 {
@@ -27,6 +26,13 @@ namespace cs2rtv
         public void StopSoundCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
         {
             PlayClientSound(cCSPlayer!, "StopSoundEvents.StopAllMusic");
+        }
+
+        [ConsoleCommand("css_maplistreload")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        public void ReloadMaplistCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
+        {
+            maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
         }
 
         [ConsoleCommand("css_rtv")]
@@ -182,24 +188,24 @@ namespace cs2rtv
             }
             string? mapname = command.GetArg(1);
 
-            List<string> blocklist = new List<string>
-            {
-                "surf","surf_","bhop","bhop_","kz","kz_"
-            };
+            // List<string> blocklist = new List<string>
+            // {
+            //     "surf","surf_","bhop","bhop_","kz","kz_"
+            // };
 
-            foreach (string bug in blocklist)
-            {
-                if (Regex.IsMatch(mapname, @$"\b{bug}\b"))
-                {
-                    command.ReplyToCommand($"你输入的字段太少，无法查到符合条件的地图");
-                    return;
-                }
-            }
+            // foreach (string bug in blocklist)
+            // {
+            //     if (Regex.IsMatch(mapname, @$"\b{bug}\b"))
+            //     {
+            //         command.ReplyToCommand($"你输入的字段太少，无法查到符合条件的地图");
+            //         return;
+            //     }
+            // }
 
-            if (maplist.Contains(mapname) && mapname.Length > 2)
+            if (maplist.Contains(mapname.ToLower()))
             {
                 var findmapname = "";
-                List<string> findmapcache = maplist.Where(x => x.Contains(mapname)).ToList();
+                List<string> findmapcache = maplist.Where(x => x.Contains(mapname.ToLower())).ToList();
                 if(findmapcache.Count == 1)
                     findmapname = mapname;
                 else

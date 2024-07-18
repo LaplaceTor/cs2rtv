@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 
 namespace cs2rtv
@@ -83,7 +81,7 @@ namespace cs2rtv
         private void CanRtvtimer()
         {
             canrtv = false;
-            Server.NextFrame(() => _canrtvtimer = AddTimer(10 * 60f, () => canrtv = true));
+            Server.NextFrame(() => _canrtvtimer = AddTimer(15 * 60f, () => canrtv = true));
         }
 
         private void ChangeMapRepeat(string mapname)
@@ -105,18 +103,19 @@ namespace cs2rtv
                         player.PrintToChat($"距离换图还有{second}秒");
                     second--;
                 }
-            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+            }, TimerFlags.REPEAT);
             var tryround = 0;
             _changemaprepeat = AddTimer(10f, () =>
             {
-                Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
-                tryround++;
                 if (tryround > 6)
                 {
                     var randommap = maplist[random.Next(0, maplist.Count - 1)];
                     Server.ExecuteCommand($"ds_workshop_changelevel {randommap}");
                 }
-            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+                else
+                    Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+                tryround++;
+            }, TimerFlags.REPEAT);
         }
 
         private void RepeatBroadcast(int repeatround, float eachrepeattime, string chatmessage)
