@@ -207,10 +207,10 @@ namespace cs2rtv
                 var findmapname = "";
                 List<string> findmapcache = maplist.Where(x => x.Contains(mapname.ToLower())).ToList();
                 if(findmapcache.Count == 1)
-                    findmapname = mapname;
+                    findmapname = findmapcache.First();
                 else
                 {
-                    var randommap = findmapcache.FirstOrDefault();
+                    var randommap = findmapcache.First();
                     command.ReplyToCommand($"你是否在寻找 {randommap}");
                     return;
                 }
@@ -239,9 +239,9 @@ namespace cs2rtv
                 for(var x = 0; x<50; x++)
                 {
                     if(maplistcache.Count == 0) break;
-                    var z = random.Next(0,maplist.Count - 1);
+                    var z = random.Next(0,maplistcache.Count - 1);
                     cCSPlayer!.PrintToConsole($"{maplistcache[z]}");
-                    maplist.Remove(maplistcache[z]);
+                    maplistcache.Remove(maplistcache[z]);
                 }
             }
         }
