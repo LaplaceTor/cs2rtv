@@ -1,6 +1,4 @@
-
-
-using System.Text.RegularExpressions;
+using System.Globalization;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -30,7 +28,7 @@ namespace cs2rtv
 
         [ConsoleCommand("css_maplistreload")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-[RequiresPermissions("@css/changemap")]
+        [RequiresPermissions("@css/changemap")]
         public void ReloadMaplistCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
         {
             maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
@@ -67,23 +65,6 @@ namespace cs2rtv
                 isrtving = true;
                 isrtv = true;
                 rtvcount.Clear();
-                // var x = 0;
-                // _repeattimer = AddTimer(1f, () =>
-                // {
-                //     x++;
-                //     if (x >= 10)
-                //     {
-                //         Server.NextFrame(() => StartRtv());
-                //     }else
-                //     {
-                //         foreach (var player in IsPlayer())
-                //         {
-                //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                //             player.PrintToChat("地图投票即将开始");
-                //         }
-                //     }
-
-                // }, TimerFlags.REPEAT);
                 RepeatBroadcast(10,1f,"地图投票即将开始");
             }
         }
@@ -154,22 +135,6 @@ namespace cs2rtv
             }
             isrtving = true;
             isrtv = true;
-            // var x = 0;
-            // _repeattimer = AddTimer(1f, () =>
-            // {
-            //     x++;
-            //     if (x >= 10)
-            //     {
-            //             Server.NextFrame(() => StartRtv());
-            //     }else
-            //     {
-            //         foreach (var player in IsPlayer())
-            //         {
-            //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-            //             player.PrintToChat("管理员已强制开始地图投票");
-            //         }
-            //     }
-            // }, TimerFlags.REPEAT);
             RepeatBroadcast(10,1f,"管理员已强制开始地图投票");
         }
 
@@ -188,24 +153,10 @@ namespace cs2rtv
                 return;
             }
             string? mapname = command.GetArg(1);
-
-            // List<string> blocklist = new List<string>
-            // {
-            //     "surf","surf_","bhop","bhop_","kz","kz_"
-            // };
-
-            // foreach (string bug in blocklist)
-            // {
-            //     if (Regex.IsMatch(mapname, @$"\b{bug}\b"))
-            //     {
-            //         command.ReplyToCommand($"你输入的字段太少，无法查到符合条件的地图");
-            //         return;
-            //     }
-            // }
-
+            var findmapname = "";
             if (maplist.Contains(mapname.ToLower()))
             {
-                var findmapname = "";
+                
                 List<string> findmapcache = maplist.Where(x => x.Contains(mapname.ToLower())).ToList();
                 if(findmapcache.Count == 1)
                     findmapname = findmapcache.First();
@@ -215,36 +166,60 @@ namespace cs2rtv
                     command.ReplyToCommand($"你是否在寻找 {randommap}");
                     return;
                 }
-                if (mapnominatelist.Find(x=> x == findmapname) != null)
-                {
-                    command.ReplyToCommand($"地图 {findmapname} 已被他人预定");
-                    return;
-                }
-                else if (findmapname == Server.MapName)
-                {
-                    command.ReplyToCommand($"地图 {findmapname} 为当前地图");
-                    return;
-                }
-                else if (mapcooldown.Find(x=> x == findmapname) != null)
-                {
-                    command.ReplyToCommand($"地图 {findmapname} 最近已经游玩过了");
-                    return;
-                }
-                mapnominatelist.Add(findmapname);
-                Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {findmapname}");
             }
             else
             {
-                command.ReplyToCommand($"未找到地图{mapname}, 打开控制台查看部分地图");
-                var maplistcache = maplist;
-                for(var x = 0; x<50; x++)
+                command.ReplyToCommand($"未找到地图{mapname},打开控制台输入 css_maplist 查看服务器地图列表");
+                return;
+            }
+
+            if (mapnominatelist.Find(x=> x == findmapname) != null)
+            {
+                command.ReplyToCommand($"地图 {findmapname} 已被他人预定");
+                return;
+            }
+            else if (findmapname == Server.MapName)
+            {
+                command.ReplyToCommand($"地图 {findmapname} 为当前地图");
+                return;
+            }
+            else if (mapcooldown.Find(x=> x == findmapname) != null)
+            {
+                command.ReplyToCommand($"地图 {findmapname} 最近已经游玩过了");
+                return;
+            }
+            mapnominatelist.Add(findmapname);
+            Server.PrintToChatAll($"{cCSPlayer!.PlayerName} 预定了地图 {findmapname}");
+        }
+
+        [ConsoleCommand("css_maplist")]
+        [CommandHelper(minArgs: 0, usage: "[number]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void MapListCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
+        {
+            var x = maplist.Count /10;
+            var y = maplist.Count - (x * 10);
+            var z = 0;
+
+            if(command.GetArg(1) != null)
+            {
+                if(Int32.TryParse(command.GetArg(1),out int numValue))
+                    z = numValue;
+                else
                 {
-                    if(maplistcache.Count == 0) break;
-                    var z = random.Next(0,maplistcache.Count - 1);
-                    cCSPlayer!.PrintToConsole($"{maplistcache[z]}");
-                    maplistcache.Remove(maplistcache[z]);
+                    cCSPlayer!.PrintToConsole("请正确输入数字如 css_maplist 1");
+                    return;
                 }
             }
+
+            if(z > 0)
+                cCSPlayer!.PrintToConsole($"输入 css_maplist {z-1} 查看上一组列表");
+            for(var i=0; i <10; i++)
+            {
+                if(z == x && i >= y) break;
+                cCSPlayer!.PrintToConsole(maplist[z*10+i]);
+            }
+            if(z < x)
+                cCSPlayer!.PrintToConsole($"输入 css_maplist {z+1} 查看下一组列表");
         }
     }
 }
