@@ -1,7 +1,5 @@
-using System.Text.RegularExpressions;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Menu;
-using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
 
 namespace cs2rtv
@@ -12,11 +10,13 @@ namespace cs2rtv
         {
             KillTimer();
             Logger.LogInformation("开始投票换图");
+
+            // if(maplist.Count() == 0)
+            //     maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
             GetPlayersCount();
             if (playercount == 0)
             {
                 isrtv = true;
-                // isforcertv = true;
                 var randommap = "";
                 int index = random.Next(0, maplist.Count - 1);
                 while (!rtvwin)
@@ -36,7 +36,6 @@ namespace cs2rtv
             var music = rtvmusiclist[random.Next(0, rtvmusiclist.Count - 1)];
             foreach (var player in IsPlayer())
             {
-                // playClientSound(player, "UI.Guardian.TooFarWarning", 0.5f, 1f);
                 AddTimer(5f, () => PlayClientSound(player, music, 0.5f, 1f));
             }
             if (!isrtvagain)
@@ -214,22 +213,6 @@ namespace cs2rtv
             else
             {
                 isrtvagain = true;
-                // var x = 0;
-                // _repeattimer = AddTimer(1f, () =>
-                // {
-                //     x++;
-                //     if (x >= 10)
-                //     {
-                //             Server.NextFrame(() => StartRtv());
-                //     }else
-                //     {
-                //         foreach (var player in IsPlayer())
-                //         {
-                //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                //             player.PrintToChat("即将进行下一轮投票");
-                //         }
-                //     }
-                // }, TimerFlags.REPEAT);
                 RepeatBroadcast(10,1f,"即将进行下一轮投票");
             }
         }

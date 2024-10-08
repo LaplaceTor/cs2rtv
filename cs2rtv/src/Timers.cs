@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 
 namespace cs2rtv
@@ -32,25 +30,11 @@ namespace cs2rtv
         private void StartMaptimerHandler()
         {
             timeleft--;
+            if(timeleft % 10 == 0 && timeleft > 0)
+                Server.PrintToChatAll($"距离投票下一张地图还有{timeleft}分钟");
             if (timeleft <= 0)
             {
                 isrtving = true;
-                // var x = 0;
-                // _repeattimer = AddTimer(1f, () =>
-                // {
-                //     x++;
-                //     if (x >= 10)
-                //     {
-                //             Server.NextFrame(() => StartRtv());
-                //     }else
-                //     {
-                //         foreach (var player in IsPlayer())
-                //         {
-                //             PlayClientSound(player, "Alert.WarmupTimeoutBeep");
-                //             player.PrintToChat("当前地图时长还剩5分钟");
-                //         }
-                //     }
-                // }, TimerFlags.REPEAT);
                 RepeatBroadcast(10,1f,"当前地图时长还剩5分钟");
             }
             else
@@ -83,38 +67,26 @@ namespace cs2rtv
         private void CanRtvtimer()
         {
             canrtv = false;
-            Server.NextFrame(() => _canrtvtimer = AddTimer(10 * 60f, () => canrtv = true));
+            Server.NextFrame(() => _canrtvtimer = AddTimer(5 * 60f, () => canrtv = true));
         }
 
         private void ChangeMapRepeat(string mapname)
         {
             var music = mapendmusiclist[random.Next(0, mapendmusiclist.Count - 1)];
-            foreach (var player in IsPlayer())
-                    PlayClientSound(player, music);
-            var second = 10;
-            _repeattimer = AddTimer(1.0f, () =>
+            RepeatBroadcast(10,1f,$"即将更换地图为{mapname}......");
+            ChangeMapRepeatHandler(mapname,5);
+        }
+
+        private void ChangeMapRepeatHandler(string mapname,int tryround)
+        {
+            _changemaprepeat = AddTimer(10f, ()=>
             {
-                if (second <= 0)
-                {
-                    if (_repeattimer != null)
-                        Server.NextFrame(() => _repeattimer.Kill());
-                    return;
-                }
-                foreach (var player in IsPlayer())
-                    player.PrintToChat($"距离换图还有{second}秒");
-                second--;
-            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
-            var tryround = 0;
-            _changemaprepeat = AddTimer(10f, () =>
-            {
+                tryround--;
+                if (tryround < 0)
+                    mapname = maplist[random.Next(0, maplist.Count - 1)];
                 Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
-                tryround++;
-                if (tryround > 6)
-                {
-                    var randommap = maplist[random.Next(0, maplist.Count - 1)];
-                    Server.ExecuteCommand($"ds_workshop_changelevel {randommap}");
-                }
-            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+                ChangeMapRepeatHandler(mapname,tryround);
+            });
         }
 
         private void RepeatBroadcast(int repeatround, float eachrepeattime, string chatmessage)
