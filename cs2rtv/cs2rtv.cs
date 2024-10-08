@@ -41,7 +41,7 @@ namespace cs2rtv
         {
             Logger.LogInformation("load maplist from {Path}", Path.Join(ModuleDirectory, "maplist.txt"));
             maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
-            EmitSoundExtension.Init();
+            // EmitSoundExtension.Init();
 
             if (hotReload)
             {

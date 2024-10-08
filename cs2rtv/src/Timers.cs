@@ -30,6 +30,8 @@ namespace cs2rtv
         private void StartMaptimerHandler()
         {
             timeleft--;
+            if(timeleft % 10 == 0 && timeleft > 0)
+                Server.PrintToChatAll($"距离投票下一张地图还有{timeleft}分钟");
             if (timeleft <= 0)
             {
                 isrtving = true;
@@ -65,7 +67,7 @@ namespace cs2rtv
         private void CanRtvtimer()
         {
             canrtv = false;
-            Server.NextFrame(() => _canrtvtimer = AddTimer(15 * 60f, () => canrtv = true));
+            Server.NextFrame(() => _canrtvtimer = AddTimer(5 * 60f, () => canrtv = true));
         }
 
         private void ChangeMapRepeat(string mapname)

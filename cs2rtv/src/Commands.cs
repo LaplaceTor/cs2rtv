@@ -138,7 +138,18 @@ namespace cs2rtv
             RepeatBroadcast(10,1f,"管理员已强制开始地图投票");
         }
 
-        [ConsoleCommand("css_nominate")]
+        [ConsoleCommand("css_map")]
+        [CommandHelper(minArgs: 1, usage: "[mapname]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        [RequiresPermissions("@css/changemap")]
+        public void ChangeMapCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
+        {
+            string? mapname = command.GetArg(1);
+            Server.ExecuteCommand($"ds_workshop_changelevel {mapname}");
+            Server.ExecuteCommand($"host_workshop_map {mapname}");
+        }
+
+
+        [ConsoleCommand("css_yd")]
         [CommandHelper(minArgs: 0, usage: "[mapname]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void NominateCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
         {
@@ -158,7 +169,7 @@ namespace cs2rtv
             {
                 
                 List<string> findmapcache = maplist.Where(x => x.Contains(mapname.ToLower())).ToList();
-                if(findmapcache.Count == 1)
+                if(findmapcache.Count == 1 || findmapcache.First() == mapname)
                     findmapname = findmapcache.First();
                 else
                 {
@@ -193,32 +204,38 @@ namespace cs2rtv
         }
 
         [ConsoleCommand("css_maplist")]
-        [CommandHelper(minArgs: 0, usage: "[number]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        [CommandHelper(minArgs: 1, usage: "[number]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void MapListCommand(CCSPlayerController? cCSPlayer, CommandInfo command)
         {
             var x = maplist.Count /10;
             var y = maplist.Count - (x * 10);
-            var z = 0;
+            var z = 1;
 
             if(command.GetArg(1) != null)
             {
                 if(Int32.TryParse(command.GetArg(1),out int numValue))
                     z = numValue;
-                else
-                {
-                    cCSPlayer!.PrintToConsole("请正确输入数字如 css_maplist 1");
-                    return;
-                }
+            }
+            else
+            {
+                cCSPlayer!.PrintToConsole("请正确输入数字如 css_maplist 1");
+                return;
             }
 
-            if(z > 0)
+            if(z-1 > x || z <= 0)
+            {
+                cCSPlayer!.PrintToConsole("输入的数字超出当前服务器地图池范围");
+                return;
+            }
+            
+            if(z-1 > 0)
                 cCSPlayer!.PrintToConsole($"输入 css_maplist {z-1} 查看上一组列表");
             for(var i=0; i <10; i++)
             {
                 if(z == x && i >= y) break;
-                cCSPlayer!.PrintToConsole(maplist[z*10+i]);
+                cCSPlayer!.PrintToConsole(maplist[(z-1)*10+i]);
             }
-            if(z < x)
+            if(z-1 < x)
                 cCSPlayer!.PrintToConsole($"输入 css_maplist {z+1} 查看下一组列表");
         }
     }

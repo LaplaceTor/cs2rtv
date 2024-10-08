@@ -10,6 +10,9 @@ namespace cs2rtv
         {
             KillTimer();
             Logger.LogInformation("开始投票换图");
+
+            // if(maplist.Count() == 0)
+            //     maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
             GetPlayersCount();
             if (playercount == 0)
             {
