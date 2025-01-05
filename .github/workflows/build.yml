@@ -35,7 +35,7 @@ jobs:
     - name: Restore
       run: dotnet restore
     - name: Build
-      run: dotnet build ${{ env.PROJECT_PATH }} -c cs2rtv -o ${{ env.OUTPUT_PATH }}
+      run: dotnet build ${{ env.PROJECT_PATH }} -c cs2rtv/cs2rtv.cs -o ${{ env.OUTPUT_PATH }}
     - name: Archive build
       uses: actions/upload-artifact@v4
       with:
