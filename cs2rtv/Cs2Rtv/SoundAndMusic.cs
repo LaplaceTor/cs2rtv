@@ -1,10 +1,7 @@
+namespace Cs2Rtv;
 
-namespace cs2rtv
-{
-    public partial class Cs2rtv
-    {
-        private readonly List<string> rtvmusiclist =
-        [
+public partial class Cs2Rtv {
+    private readonly List<string> rtvmusiclist = [
         "Music.BombPlanted.3kliksphilip_01",
         "Music.BombPlanted.amontobin_01",
         "Music.BombPlanted.austinwintory_01",
@@ -81,10 +78,9 @@ namespace cs2rtv
         "Music.BombPlanted.valve_cs2_01",
         "Music.BombPlanted.valve_csgo_01",
         "Music.BombPlanted.valve_csgo_02"
-        ];
+    ];
 
-        private List<string> mapendmusiclist =
-        [
+    private List<string> mapendmusiclist = [
         "Music.BombTenSecCount.3kliksphilip_01",
         "Music.BombTenSecCount.amontobin_01",
         "Music.BombTenSecCount.austinwintory_01",
@@ -161,6 +157,5 @@ namespace cs2rtv
         "Music.BombTenSecCount.valve_cs2_01",
         "Music.BombTenSecCount.valve_csgo_01",
         "Music.BombTenSecCount.valve_csgo_02"
-        ];
-    }
+    ];
 }
