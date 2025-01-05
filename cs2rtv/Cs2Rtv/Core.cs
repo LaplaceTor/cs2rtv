@@ -71,7 +71,7 @@ public partial class Cs2Rtv {
                     VoteEnd(nextMap);
                 });
             } else {
-                voteMenu.AddMenuOption(map.name, (player, _) => {
+                voteMenu.AddMenuOption($"{map.name}(Tier {map.tier})", (player, _) => {
                     votes[map] += 1;
                     totalVotes += 1;
                     player.PrintToChat($"你已投票给地图 {map}");
@@ -164,9 +164,12 @@ public partial class Cs2Rtv {
                 }
 
                 CanRtvTimer();
-                if (!nextMapPass)
-                    StartMapTimer();
-                else
+                if (!nextMapPass){
+                    if(timeLeft < 5){
+                        timeLeft = 5;
+                        StartMapTimer();
+                    }
+                }else
                     EndMapTimer();
             } else {
                 mapNominateList.Clear();

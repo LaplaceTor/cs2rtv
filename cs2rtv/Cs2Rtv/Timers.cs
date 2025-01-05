@@ -52,7 +52,7 @@ public partial class Cs2Rtv {
 
     private void ChangeMapRepeat(Map map) {
         var music = mapendmusiclist[random.Next(0, mapendmusiclist.Count - 1)];
-        RepeatBroadcast(10, 1f, $"即将更换地图为{map}......");
+        RepeatBroadcast(10, 1f, $"即将更换地图为{map.name}......");
         ChangeMapRepeatHandler(map, 5);
     }
 

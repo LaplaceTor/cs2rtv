@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -27,7 +28,7 @@ public partial class Cs2Rtv {
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     [RequiresPermissions("@css/changemap")]
     public void ReloadMaplistCommand(CCSPlayerController? controller, CommandInfo command) {
-        mapList = loadMaps(new StreamReader(new FileStream(Path.Join(ModuleDirectory, "maplist.txt"), FileMode.Open)));
+        mapList = loadMaps(new StreamReader(new FileStream(Path.Join(ModuleDirectory, "mapList.json"), FileMode.Open)));
     }
 
     [ConsoleCommand("css_rtv")]
@@ -121,11 +122,16 @@ public partial class Cs2Rtv {
     }
 
     [ConsoleCommand("css_map")]
-    [CommandHelper(minArgs: 1, usage: "[mapId]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    [CommandHelper(minArgs: 1, usage: "[mapName/mapID]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     [RequiresPermissions("@css/changemap")]
     public void ChangeMapCommand(CCSPlayerController? controller, CommandInfo command) {
-        var mapId = int.Parse(command.GetArg(1));
-        Server.ExecuteCommand($"host_workshop_map {mapId}");
+        var mapName = command.GetArg(1);
+        var findMapCache = mapList.Where(x => x.name.Contains(mapName, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        if (findMapCache.Count == 1 || findMapCache.First().name == mapName) {
+              Server.ExecuteCommand($"host_workshop_map {findMapCache.First().id}");
+        }else{
+            Server.ExecuteCommand($"host_workshop_map {mapName}");
+        }
     }
 
 
@@ -150,7 +156,7 @@ public partial class Cs2Rtv {
                 findMap = findMapCache.First();
             } else {
                 var randomMap = findMapCache.First();
-                command.ReplyToCommand($"你是否在寻找 {randomMap}");
+                command.ReplyToCommand($"你是否在寻找 {randomMap.name}");
                 return;
             }
         } else {
@@ -159,22 +165,22 @@ public partial class Cs2Rtv {
         }
 
         if (mapNominateList.Find(x => x == findMap) != null) {
-            command.ReplyToCommand($"地图 {findMap} 已被他人预定");
+            command.ReplyToCommand($"地图 {findMap.name} 已被他人预定");
             return;
         }
 
         if (findMap.name == Server.MapName) {
-            command.ReplyToCommand($"地图 {findMap} 为当前地图");
+            command.ReplyToCommand($"地图 {findMap.name} 为当前地图");
             return;
         }
 
         if (mapCooldown.Find(x => x == findMap) != null) {
-            command.ReplyToCommand($"地图 {findMap} 最近已经游玩过了");
+            command.ReplyToCommand($"地图 {findMap.name} 最近已经游玩过了");
             return;
         }
 
         mapNominateList.Add(findMap);
-        Server.PrintToChatAll($"{controller!.PlayerName} 预定了地图 {findMap}");
+        Server.PrintToChatAll($"{controller!.PlayerName} 预定了地图 {findMap.name}");
     }
 
     [ConsoleCommand("css_maplist")]
@@ -204,7 +210,7 @@ public partial class Cs2Rtv {
 
         for (var i = 0; i < 10; i++) {
             if (z == x && i >= y) break;
-            controller!.PrintToConsole(mapList[(z - 1) * 10 + i].ToString());
+            controller!.PrintToConsole($"{mapList[(z - 1) * 10 + i].name}(Tier {mapList[(z - 1) * 10 + i].tier})");
         }
 
         if (z - 1 < x) {
