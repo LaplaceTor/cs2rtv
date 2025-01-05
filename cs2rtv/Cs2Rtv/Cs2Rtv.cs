@@ -9,9 +9,9 @@ using System.Text.RegularExpressions;
 namespace Cs2Rtv;
 
 public partial class Cs2Rtv : BasePlugin {
-    public override string ModuleAuthor => "lapl";
+    public override string ModuleAuthor => "lapl && Nyayurin";
     public override string ModuleName => "MapChanger for kz/bhop/surf";
-    public override string ModuleVersion => "1.0.1";
+    public override string ModuleVersion => "2.0beta";
     private ImmutableList<Map> mapList = [];
     private readonly List<Map> mapNominateList = [];
     private readonly List<ulong> rtvCount = [];
