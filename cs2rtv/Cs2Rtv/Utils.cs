@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 
@@ -24,4 +25,5 @@ public partial class Cs2Rtv {
         );
         return player;
     }
+    public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 }

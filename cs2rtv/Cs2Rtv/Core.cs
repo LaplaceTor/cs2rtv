@@ -9,8 +9,15 @@ public partial class Cs2Rtv {
         KillTimer();
         Logger.LogInformation("开始投票换图");
 
-        // if(maplist.Count() == 0)
-        //     maplist = new List<string>(File.ReadAllLines(Path.Join(ModuleDirectory, "maplist.txt")));
+        if(mapList.Count() == 0){ 
+            Server.PrintToChatAll("地图列表为空，请联系管理员"); 
+            Logger.LogInformation("地图列表为空");
+            rtvWin = false;
+            isRtving = false;
+            isRtvAgain = false;
+            return;
+        }
+        
         GetPlayersCount();
         if (playerCount == 0) {
             isRtv = true;

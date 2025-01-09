@@ -1,0 +1,62 @@
+[
+    {
+        "id": 3374560468,
+        "name": "kz_leviathan",
+        "tier": 2
+    },
+    {
+        "id": 3366541429,
+        "name": "kz_royalcapital",
+        "tier": 2
+    },
+    {
+        "id": 3344417199,
+        "name": "kz_key",
+        "tier": 2
+    },
+    {
+        "id": 3294243116,
+        "name": "kz_rome",
+        "tier": 2
+    },
+    {
+        "id": 3287874815,
+        "name": "kz_concord",
+        "tier": 2
+    },
+    {
+        "id": 3250581189,
+        "name": "kz_consequence",
+        "tier": 2
+    },
+    {
+        "id": 3248925340,
+        "name": "kz_butterfly",
+        "tier": 2
+    },
+    {
+        "id": 3164403123,
+        "name": "kz_labour",
+        "tier": 2
+    },
+    {
+        "id": 3162361624,
+        "name": "kz_serfdom",
+        "tier": 2
+    },
+    {
+        "id": 3160291769,
+        "name": "kz_niche",
+        "tier": 2
+    },
+    {
+        "id": 3121168339,
+        "name": "kz_grotto",
+        "tier": 2
+    },
+    {
+        "id": 3082213334,
+        "name": "kz_ehcivec",
+        "tier": 2
+    }
+]
