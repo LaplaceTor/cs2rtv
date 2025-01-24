@@ -11,7 +11,7 @@ public partial class Cs2Rtv {
             rtvCount.Remove(@event.Userid.SteamID);
         if (extCount.Contains(@event.Userid!.SteamID))
             extCount.Remove(@event.Userid.SteamID);
-        GetPlayersCount();
+        Utils.GetPlayersCount();
         if (rtvCount.Count >= rtvRequired && playerCount != 0) {
             isRtving = true;
             isRtv = true;

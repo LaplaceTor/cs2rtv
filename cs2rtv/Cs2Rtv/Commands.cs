@@ -20,14 +20,14 @@ public partial class Cs2Rtv {
     [ConsoleCommand("css_stopsound")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void StopSoundCommand(CCSPlayerController? controller, CommandInfo command) {
-        PlayClientSound(controller!, "StopSoundEvents.StopAllMusic");
+        controller!.EmitSound("StopSoundEvents.StopAllMusic", new Dictionary<string, float> { { "volume", 1.0f }, { "pitch", 1.0f } });
     }
 
     [ConsoleCommand("css_maplistreload")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     [RequiresPermissions("@css/changemap")]
     public void ReloadMaplistCommand(CCSPlayerController? controller, CommandInfo command) {
-        mapList = loadMaps(new StreamReader(new FileStream(Path.Join(ModuleDirectory, "mapList.json"), FileMode.Open)));
+        mapList = LoadMaps(Path.Join(ModuleDirectory, "mapList.json"));
     }
 
     [ConsoleCommand("css_rtv")]
@@ -43,7 +43,7 @@ public partial class Cs2Rtv {
             return;
         }
 
-        GetPlayersCount();
+        Utils.GetPlayersCount();
 
         if (rtvCount.Contains(controller!.SteamID)) {
             Server.PrintToChatAll($"{controller.PlayerName} 已投票更换地图，当前 {rtvCount.Count}/{rtvRequired}");
@@ -89,7 +89,7 @@ public partial class Cs2Rtv {
             return;
         }
 
-        GetPlayersCount();
+        Utils.GetPlayersCount();
         if (extCount.Contains(controller!.SteamID)) {
             Server.PrintToChatAll($"{controller.PlayerName} 已投票延长地图，当前 {extCount.Count}/{rtvRequired}");
             return;
@@ -135,35 +135,48 @@ public partial class Cs2Rtv {
 
 
     [ConsoleCommand("css_yd")]
-    [CommandHelper(minArgs: 0, usage: "[mapName]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(minArgs: 1, usage: "[mapName/mapID]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void NominateCommand(CCSPlayerController? controller, CommandInfo command) {
+        if (controller == null) return;
+
         if (isRtving) {
             command.ReplyToCommand("投票已在进行中");
             return;
         }
 
         if (mapNominateList.Count >= 5) {
-            command.ReplyToCommand("当前预定地图已满");
+            command.ReplyToCommand($"当前预定地图已满（{mapNominateList.Count}/5）");
             return;
         }
 
-        var mapName = command.GetArg(1);
-        Map findMap;
-        if (mapList.Exists(map => map.name.Equals(mapName, StringComparison.CurrentCultureIgnoreCase))) {
-            var findMapCache = mapList.Where(x => x.name.Contains(mapName, StringComparison.CurrentCultureIgnoreCase)).ToList();
-            if (findMapCache.Count == 1 || findMapCache.First().name == mapName) {
-                findMap = findMapCache.First();
-            } else {
-                var randomMap = findMapCache.First();
-                command.ReplyToCommand($"你是否在寻找 {randomMap.name}");
+        var input = command.GetArg(1);
+        Map? findMap = null;
+
+        // 先尝试通过ID查找
+        if (int.TryParse(input, out var mapId)) {
+            findMap = mapList.FirstOrDefault(m => m.id == mapId);
+        }
+
+        // 如果ID查找失败，尝试通过名称查找
+        if (findMap == null) {
+            var matches = mapList
+                .Where(m => m.name.Contains(input, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (matches.Count == 1) {
+                findMap = matches[0];
+            } else if (matches.Count > 1) {
+                command.ReplyToCommand($"你是否在寻找 {matches[0].name}");
                 return;
             }
-        } else {
-            command.ReplyToCommand($"未找到地图{mapName},打开控制台输入 css_maplist 查看服务器地图列表");
+        }
+
+        if (findMap == null) {
+            command.ReplyToCommand($"未找到地图 '{input}'，使用 css_maplist 查看地图列表");
             return;
         }
 
-        if (mapNominateList.Find(x => x == findMap) != null) {
+        if (mapNominateList.Contains(findMap)) {
             command.ReplyToCommand($"地图 {findMap.name} 已被他人预定");
             return;
         }
@@ -173,47 +186,66 @@ public partial class Cs2Rtv {
             return;
         }
 
-        if (mapCooldown.Find(x => x == findMap) != null) {
+        if (mapCooldown.Contains(findMap)) {
             command.ReplyToCommand($"地图 {findMap.name} 最近已经游玩过了");
             return;
         }
 
         mapNominateList.Add(findMap);
-        Server.PrintToChatAll($"{controller!.PlayerName} 预定了地图 {findMap.name}");
+        Server.PrintToChatAll($"{controller.PlayerName} 预定了地图 {findMap.name} (ID: {findMap.id})");
     }
 
     [ConsoleCommand("css_maplist")]
-    [CommandHelper(minArgs: 1, usage: "[number]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(minArgs: 0, usage: "[page] [tier]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void MapListCommand(CCSPlayerController? controller, CommandInfo command) {
-        var x = mapList.Count / 10;
-        var y = mapList.Count - (x * 10);
-        var z = 1;
+        if (controller == null) return;
 
-        if (command.GetArg(1) != null) {
-            if (int.TryParse(command.GetArg(1), out var numValue)) {
-                z = numValue;
-            }
-        } else {
-            controller!.PrintToConsole("请正确输入数字如 css_maplist 1");
-            return;
+        const int pageSize = 10;
+        var totalPages = (int)Math.Ceiling(mapList.Count / (double)pageSize);
+        var currentPage = 1;
+        var tierFilter = string.Empty;
+
+        // 解析页码参数
+        if (command.ArgCount > 1 && int.TryParse(command.GetArg(1), out var page) && page > 0) {
+            currentPage = Math.Min(page, totalPages);
         }
 
-        if (z - 1 > x || z <= 0) {
-            controller!.PrintToConsole("输入的数字超出当前服务器地图池范围");
-            return;
+        // 解析tier过滤参数
+        if (command.ArgCount > 2) {
+            tierFilter = command.GetArg(2);
         }
 
-        if (z - 1 > 0) {
-            controller!.PrintToConsole($"输入 css_maplist {z - 1} 查看上一组列表");
+        // 过滤地图列表
+        var filteredMaps = mapList
+            .Where(m => string.IsNullOrEmpty(tierFilter) || 
+                       m.tier.ToString() == tierFilter)
+            .ToList();
+
+        // 计算过滤后的分页信息
+        var filteredPages = (int)Math.Ceiling(filteredMaps.Count / (double)pageSize);
+        currentPage = Math.Min(currentPage, filteredPages);
+
+        // 显示地图列表
+        controller.PrintToConsole($"=== 地图列表 (第 {currentPage}/{filteredPages} 页) ===");
+        controller.PrintToConsole($"总地图数: {filteredMaps.Count}");
+
+        var startIndex = (currentPage - 1) * pageSize;
+        var endIndex = Math.Min(startIndex + pageSize, filteredMaps.Count);
+
+        for (var i = startIndex; i < endIndex; i++) {
+            var map = filteredMaps[i];
+            controller.PrintToConsole($"{i + 1}. {map.name} (ID: {map.id}, Tier: {map.tier})");
         }
 
-        for (var i = 0; i < 10; i++) {
-            if (z == x && i >= y) break;
-            controller!.PrintToConsole($"{mapList[(z - 1) * 10 + i].name}(Tier {mapList[(z - 1) * 10 + i].tier})");
+        // 显示导航提示
+        if (currentPage > 1) {
+            controller.PrintToConsole($"输入 css_maplist {currentPage - 1} {tierFilter} 查看上一页");
         }
-
-        if (z - 1 < x) {
-            controller!.PrintToConsole($"输入 css_maplist {z + 1} 查看下一组列表");
+        if (currentPage < filteredPages) {
+            controller.PrintToConsole($"输入 css_maplist {currentPage + 1} {tierFilter} 查看下一页");
+        }
+        if (!string.IsNullOrEmpty(tierFilter)) {
+            controller.PrintToConsole($"当前过滤: Tier {tierFilter}");
         }
     }
 }

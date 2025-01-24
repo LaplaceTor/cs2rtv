@@ -1,29 +1,74 @@
 using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Timers;
+using Microsoft.Extensions.Logging;
 
 namespace Cs2Rtv;
 
-public partial class Cs2Rtv {
-    private void GetPlayersCount() {
-        playerCount = IsPlayer().Count();
-        rtvRequired = (int)Math.Ceiling(playerCount * 0.6f);
+public static class Utils
+{
+    private static ILogger? _logger;
+    private static Func<float, Action, CounterStrikeSharp.API.Modules.Timers.Timer>? _addTimer;
+
+    public static void Initialize(ILogger logger, Func<float, Action, CounterStrikeSharp.API.Modules.Timers.Timer> addTimer)
+    {
+        _logger = logger;
+        _addTimer = addTimer;
     }
 
-    private static void PlayClientSound(CCSPlayerController controller, string sound, float volume = 1.0f,
-        float pitch = 1.0f) {
-        var parameters = new Dictionary<string, float> {
-            { "volume", volume },
-            { "pitch", pitch }
-        };
-        controller.EmitSound(sound, parameters);
+    public static void RetryTimer(Action action, float delay)
+    {
+        try
+        {
+            _addTimer?.Invoke(delay, () => 
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Error in retry timer");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to create retry timer");
+        }
     }
 
-    private IEnumerable<CCSPlayerController> IsPlayer() {
-        var player = Utilities.GetPlayers().Where(x =>
+    public static void BroadcastMessage(string message, CCSPlayerController? specificPlayer = null)
+    {
+        try
+        {
+            if (specificPlayer != null)
+            {
+                specificPlayer.PrintToChat(message);
+            }
+            else
+            {
+                Server.PrintToChatAll(message);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to broadcast message");
+        }
+    }
+
+    public static int GetPlayersCount()
+    {
+        return GetPlayers().Count();
+    }
+
+    public static IEnumerable<CCSPlayerController> GetPlayers()
+    {
+        return Utilities.GetPlayers().Where(x =>
             x is { TeamNum: > 0, IsValid: true, Connected: PlayerConnectedState.PlayerConnected }
         );
-        return player;
     }
+
     public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 }
