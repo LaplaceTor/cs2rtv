@@ -52,7 +52,7 @@ public partial class Cs2Rtv {
 
     private void ChangeMapRepeat(Map map) {
         var music = mapendmusiclist[random.Next(0, mapendmusiclist.Count - 1)];
-        RepeatBroadcast(10, 1f, $"即将更换地图为{map.name}......");
+        RepeatBroadcast(10, 1f, $"即将更换地图为{map.Name}......");
         ChangeMapRepeatHandler(map, 5);
     }
 
@@ -63,7 +63,7 @@ public partial class Cs2Rtv {
                 map = mapList[random.Next(0, mapList.Count - 1)];
             }
 
-            Server.ExecuteCommand($"host_workshop_map {map.id}");
+            Server.ExecuteCommand($"host_workshop_map {map.Id}");
             ChangeMapRepeatHandler(map, tryRound);
         });
     }

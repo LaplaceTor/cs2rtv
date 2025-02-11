@@ -1,11 +1,22 @@
 ﻿namespace Cs2Rtv;
 
-public class Map(int id, string name, int tier) {
-    public int id { get; } = id;
-    public string name { get; } = name;
-    public int tier { get; } = tier;
+public class Map
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int Tier { get; set; }
 
-    public override string ToString() {
-        return $"{nameof(Map)}({nameof(id)}: {id}, {nameof(name)}: {name}, {nameof(tier)}: {tier})";
+    public Map(long id, string name, int tier)
+    {
+        Id = id;
+        Name = name;
+        Tier = tier;
+    }
+
+    public Map() { }
+
+    public override string ToString()
+    {
+        return $"{nameof(Map)}({nameof(Id)}: {Id}, {nameof(Name)}: {Name}, {nameof(Tier)}: {Tier})";
     }
 }

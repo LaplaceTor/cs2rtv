@@ -45,7 +45,7 @@ public partial class Cs2Rtv : BasePlugin {
         if (hotReload) {
             Server.NextFrame(() => {
                 mapCooldown.Clear();
-                var find = mapList.Find(map => map.name == Server.MapName);
+                var find = mapList.Find(map => map.Name == Server.MapName);
                 if (find != null) {
                     mapCooldown.Add(find);
                 }
@@ -74,15 +74,15 @@ public partial class Cs2Rtv : BasePlugin {
                         firstMapRandom = true;
                         var index = random.Next(0, mapList.Count - 1);
                         var randomMap = mapList[index];
-                        if (randomMap.name == Server.MapName) return;
-                        Server.ExecuteCommand($"host_workshop_map {randomMap.id}");
+                        if (randomMap.Name == Server.MapName) return;
+                        Server.ExecuteCommand($"host_workshop_map {randomMap.Id}");
                     });
                     return;
                 }
             }
 
             Server.NextFrame(() => {
-                var find = mapList.Find(map => map.name == Server.MapName);
+                var find = mapList.Find(map => map.Name == Server.MapName);
                 if (find != null) {
                     mapCooldown.Add(find);
                 }

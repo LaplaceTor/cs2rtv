@@ -73,7 +73,7 @@ public partial class Cs2Rtv {
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     [RequiresPermissions("@css/changemap")]
     public void NextMapCommand(CCSPlayerController? controller, CommandInfo command) {
-        controller!.PrintToChat(nextMapPass ? $"下一张地图为{nextMap?.name}" : "还未决定下一张地图");
+        controller!.PrintToChat(nextMapPass ? $"下一张地图为{nextMap?.Name}" : "还未决定下一张地图");
     }
 
     [ConsoleCommand("css_ext")]
@@ -125,9 +125,9 @@ public partial class Cs2Rtv {
     [RequiresPermissions("@css/changemap")]
     public void ChangeMapCommand(CCSPlayerController? controller, CommandInfo command) {
         var mapName = command.GetArg(1);
-        var findMapCache = mapList.Where(x => x.name.Contains(mapName, StringComparison.CurrentCultureIgnoreCase)).ToList();
-        if (findMapCache.Count == 1 || findMapCache.First().name == mapName) {
-              Server.ExecuteCommand($"host_workshop_map {findMapCache.First().id}");
+        var findMapCache = mapList.Where(x => x.Name.Contains(mapName, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        if (findMapCache.Count == 1 || findMapCache.First().Name == mapName) {
+              Server.ExecuteCommand($"host_workshop_map {findMapCache.First().Id}");
         }else{
             Server.ExecuteCommand($"host_workshop_map {mapName}");
         }
@@ -149,13 +149,13 @@ public partial class Cs2Rtv {
 
         var mapName = command.GetArg(1);
         Map findMap;
-        if (mapList.Exists(map => map.name.Equals(mapName, StringComparison.CurrentCultureIgnoreCase))) {
-            var findMapCache = mapList.Where(x => x.name.Contains(mapName, StringComparison.CurrentCultureIgnoreCase)).ToList();
-            if (findMapCache.Count == 1 || findMapCache.First().name == mapName) {
+        if (mapList.Exists(map => map.Name.Equals(mapName, StringComparison.CurrentCultureIgnoreCase))) {
+            var findMapCache = mapList.Where(x => x.Name.Contains(mapName, StringComparison.CurrentCultureIgnoreCase)).ToList();
+            if (findMapCache.Count == 1 || findMapCache.First().Name == mapName) {
                 findMap = findMapCache.First();
             } else {
                 var randomMap = findMapCache.First();
-                command.ReplyToCommand($"你是否在寻找 {randomMap.name}");
+                command.ReplyToCommand($"你是否在寻找 {randomMap.Name}");
                 return;
             }
         } else {
@@ -164,22 +164,22 @@ public partial class Cs2Rtv {
         }
 
         if (mapNominateList.Find(x => x == findMap) != null) {
-            command.ReplyToCommand($"地图 {findMap.name} 已被他人预定");
+            command.ReplyToCommand($"地图 {findMap.Name} 已被他人预定");
             return;
         }
 
-        if (findMap.name == Server.MapName) {
-            command.ReplyToCommand($"地图 {findMap.name} 为当前地图");
+        if (findMap.Name == Server.MapName) {
+            command.ReplyToCommand($"地图 {findMap.Name} 为当前地图");
             return;
         }
 
         if (mapCooldown.Find(x => x == findMap) != null) {
-            command.ReplyToCommand($"地图 {findMap.name} 最近已经游玩过了");
+            command.ReplyToCommand($"地图 {findMap.Name} 最近已经游玩过了");
             return;
         }
 
         mapNominateList.Add(findMap);
-        Server.PrintToChatAll($"{controller!.PlayerName} 预定了地图 {findMap.name}");
+        Server.PrintToChatAll($"{controller!.PlayerName} 预定了地图 {findMap.Name}");
     }
 
     [ConsoleCommand("css_maplist")]
@@ -209,7 +209,7 @@ public partial class Cs2Rtv {
 
         for (var i = 0; i < 10; i++) {
             if (z == x && i >= y) break;
-            controller!.PrintToConsole($"{mapList[(z - 1) * 10 + i].name}(Tier {mapList[(z - 1) * 10 + i].tier})");
+            controller!.PrintToConsole($"{mapList[(z - 1) * 10 + i].Name}(Tier {mapList[(z - 1) * 10 + i].Tier})");
         }
 
         if (z - 1 < x) {

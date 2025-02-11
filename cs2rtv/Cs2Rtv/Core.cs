@@ -42,7 +42,7 @@ public partial class Cs2Rtv {
         if (!isRtvAgain) {
             voteMapList = mapNominateList;
             
-            var find = mapList.Find(map => map.name == Server.MapName);
+            var find = mapList.Find(map => map.Name == Server.MapName);
             if (find != null) {
                 voteMapList.Add(find);
             }
@@ -63,7 +63,7 @@ public partial class Cs2Rtv {
 
         foreach (var map in voteMapList) {
             votes[map] = 0;
-            if (map.name == Server.MapName) {
+            if (map.Name == Server.MapName) {
                 voteMenu.AddMenuOption("不更换地图", (player, _) => {
                     votes[map] += 1;
                     totalVotes += 1;
@@ -78,7 +78,7 @@ public partial class Cs2Rtv {
                     VoteEnd(nextMap);
                 });
             } else {
-                voteMenu.AddMenuOption($"{map.name}(Tier {map.tier})", (player, _) => {
+                voteMenu.AddMenuOption($"{map.Name}(Tier {map.Tier})", (player, _) => {
                     votes[map] += 1;
                     totalVotes += 1;
                     player.PrintToChat($"你已投票给地图 {map}");
@@ -132,7 +132,7 @@ public partial class Cs2Rtv {
                            (voteMapList.Count < 4 || totalVotes <= 2)) {
                     votes = votes.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
                     nextMap = votes.First().Key;
-                    var map = votes.Keys.FirstOrDefault(map => map.name == Server.MapName);
+                    var map = votes.Keys.FirstOrDefault(map => map.Name == Server.MapName);
                     if (map != null && votes.GetValueOrDefault(map) != 0 &&
                         votes.First().Value <= votes.GetValueOrDefault(map) + 1) {
                         nextMap = map;
@@ -159,7 +159,7 @@ public partial class Cs2Rtv {
                 rtvTimer = null;
             }
 
-            if (map.name == Server.MapName) {
+            if (map.Name == Server.MapName) {
                 if (!isRtv) {
                     Server.PrintToChatAll("地图已延长");
                     Logger.LogInformation("地图已延长");
@@ -180,8 +180,8 @@ public partial class Cs2Rtv {
                     EndMapTimer();
             } else {
                 mapNominateList.Clear();
-                Server.PrintToChatAll($"投票决定为 {map.name}");
-                Logger.LogInformation($"投票决定为 {map.name}");
+                Server.PrintToChatAll($"投票决定为 {map.Name}");
+                Logger.LogInformation($"投票决定为 {map.Name}");
                 nextMapPass = true;
                 nextMap = map;
                 CanRtvTimer();
